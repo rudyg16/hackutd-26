@@ -398,56 +398,95 @@ export function guidedRepair(localId: string): StepFactory {
   };
 }
 
+// ── Moving between steps ────────────────────────────────────────────
+/**
+ * Records the pose, visibility and material of everything under `root`. Calling the returned function
+ * puts it all back. Step animations only know how to move forward, so to show step N (going back or
+ * forward) we restore the starting scene and fast-forward steps 1..N-1 — see showStep.
+ */
+export function snapshotScene(root: THREE.Object3D) {
+  const saved: Array<{
+    o: THREE.Object3D; p: THREE.Vector3; r: THREE.Euler; s: THREE.Vector3; v: boolean;
+    m?: THREE.Material | THREE.Material[];
+  }> = [];
+  root.traverse((o) =>
+    saved.push({
+      o, p: o.position.clone(), r: o.rotation.clone(), s: o.scale.clone(), v: o.visible,
+      m: o instanceof THREE.Mesh ? o.material : undefined,
+    }),
+  );
+  return () => {
+    for (const x of saved) {
+      x.o.position.copy(x.p);
+      x.o.rotation.copy(x.r);
+      x.o.scale.copy(x.s);
+      x.o.visible = x.v;
+      if (x.m && x.o instanceof THREE.Mesh) x.o.material = x.m;
+    }
+  };
+}
+
+/** Puts the scene exactly as it is at the start of step `index`: back to the start, then earlier steps finished. */
+export function showStep(restore: () => void, steps: Step[], index: number) {
+  restore();
+  for (let i = 0; i < index; i++) steps[i].animateFn?.(1);
+}
+
 // ── Component ───────────────────────────────────────────────────────
 export default function GuidedRepair({ deviceId, steps: factory, onDone, onCancel, focusMesh, focusRadius }: Props) {
   const [device, setDevice] = useState<THREE.Group | null>(null);
   const [index, setIndex] = useState(0);
   const [replays, setReplays] = useState(0);
 
-  // Build the steps once the device exists. The cleanup removes the parts the script added,
-  // so React re-running effects in development doesn't leave a second cable in the port.
+  // Build the steps once the device exists, and remember the starting scene. The cleanup removes the
+  // parts the script added, so React re-running effects in development doesn't leave a second cable in the port.
   const factoryRef = useRef(factory);
+  const restoreRef = useRef<(() => void) | null>(null);
   const [steps, setSteps] = useState<Step[] | null>(null);
   useEffect(() => {
     if (!device) return;
     const before = new Set(device.children);
-    setSteps(factoryRef.current(device));
+    const built = factoryRef.current(device);
+    restoreRef.current = snapshotScene(device);
+    setSteps(built);
     return () => {
+      restoreRef.current?.();
+      restoreRef.current = null;
       for (const child of [...device.children]) if (!before.has(child)) device.remove(child);
       setSteps(null);
     };
   }, [device]);
   const step = steps?.[index];
 
-  // Light up the current step's part.
+  // Show the current step (after Next, Back or Replay): set up the scene for it, light up its part,
+  // and play its animation.
   useEffect(() => {
-    const obj = step && device?.getObjectByName(step.highlightMesh);
-    if (!obj) return;
-    glow(obj, true);
-    return () => glow(obj, false);
-  }, [device, step]);
-
-  // Play the current step's animation (again on Replay).
-  useEffect(() => {
-    const fn = step?.animateFn;
-    if (!fn) return;
-    const start = performance.now();
+    const restore = restoreRef.current;
+    const current = steps?.[index];
+    if (!device || !steps || !current || !restore) return;
+    showStep(restore, steps, index);
+    const obj = device.getObjectByName(current.highlightMesh);
+    if (obj) glow(obj, true);
     let frame = 0;
-    const tick = () => {
-      const t = Math.min(1, (performance.now() - start) / STEP_MS);
-      fn(t);
-      if (t < 1) frame = requestAnimationFrame(tick);
+    const fn = current.animateFn;
+    if (fn) {
+      const start = performance.now();
+      const tick = () => {
+        const t = Math.min(1, (performance.now() - start) / STEP_MS);
+        fn(t);
+        if (t < 1) frame = requestAnimationFrame(tick);
+      };
+      frame = requestAnimationFrame(tick);
+    }
+    return () => {
+      cancelAnimationFrame(frame);
+      if (obj) glow(obj, false);
     };
-    frame = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(frame);
-  }, [step, replays]);
+  }, [device, steps, index, replays]);
 
   const last = !!steps && index === steps.length - 1;
-  const next = () => {
-    step?.animateFn?.(1); // finish this step's motion even if Next was pressed early
-    if (last) onDone();
-    else setIndex((i) => i + 1);
-  };
+  const next = () => (last ? onDone() : setIndex((i) => i + 1));
+  const back = () => setIndex((i) => Math.max(0, i - 1));
 
   return (
     <div className="absolute inset-0 z-20 bg-bg">
@@ -473,6 +512,13 @@ export default function GuidedRepair({ deviceId, steps: factory, onDone, onCance
                   Exit
                 </button>
               )}
+              <button
+                className="border border-line px-3 py-1 text-dim hover:text-ink disabled:opacity-40 disabled:hover:text-dim"
+                onClick={back}
+                disabled={index === 0}
+              >
+                Back
+              </button>
               {step.animateFn && (
                 <button className="border border-line px-3 py-1 text-dim hover:text-ink" onClick={() => setReplays((r) => r + 1)}>
                   Replay
