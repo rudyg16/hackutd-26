@@ -11,7 +11,7 @@ Work through these in order. Run `/implement b` to pick up the next unchecked it
   - Group by category; set `replaceSuggested: count >= 3`, `windowDays: 30`.
   - Return one `RepeatFlag` per category that has at least one entry.
 
-- [ ] **`scripts/seed.ts`** — idempotent seeder
+- [x] **`scripts/seed.ts`** — idempotent seeder
   Reads `seed/base.json`, upserts every table in dependency order (orgs → users → racks → devices → positions → installed_parts → tickets → work_log → handoffs).
   Use `db.from(table).upsert(rows, { onConflict: "id" })`. Log counts. `npm run seed` must be safe to re-run.
 
