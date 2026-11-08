@@ -41,3 +41,14 @@ export interface BreakCommand {
   positionId: string;
   failureMode: FailureMode;
 }
+
+/** Hidden defect state, admin-only (SIM-SPEC §17). */
+export interface XrayRow {
+  id: string;
+  partId: string | null;
+  positionId: string;
+  defect: FailureMode;
+  severity: number;
+  onsetSimS: number;
+  suppressedUntilSimS: number | null;
+}

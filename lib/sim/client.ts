@@ -1,6 +1,6 @@
 // OWNER: Person C. Browser fetch helpers for app/api/sim/** (sends the simulated user like shared/api.ts).
 import { USER_HEADER, getCurrentUserId } from "@/shared/api";
-import type { BreakCommand, PositionMetricsRow, SimAlertRow, SimControlState, SimStatus } from "./api-types";
+import type { BreakCommand, PositionMetricsRow, SimAlertRow, SimControlState, SimStatus, XrayRow } from "./api-types";
 
 async function call<T>(method: string, path: string, body?: unknown): Promise<T> {
   const res = await fetch(path, {
@@ -25,6 +25,7 @@ export const simApi = {
   setControl: (p: { paused?: boolean; speed?: number }) => call<SimControlState>("PATCH", "/api/sim/control", p),
   breakPosition: (c: BreakCommand) => call<{ id: string }>("POST", "/api/sim/commands", c),
   alerts: (limit = 20) => call<SimAlertRow[]>("GET", `/api/sim/alerts?limit=${limit}`),
+  xray: () => call<XrayRow[]>("GET", "/api/sim/xray"),
   metrics: (positionId: string) =>
     call<PositionMetricsRow>("GET", `/api/sim/metrics/${encodeURIComponent(positionId)}`),
 };

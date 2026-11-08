@@ -5,6 +5,7 @@ import { useTableChanges } from "@/components/board/useTableChanges";
 import { AlertsFeed } from "@/components/sim/AlertsFeed";
 import { BreakPicker } from "@/components/sim/BreakPicker";
 import { SimStatusPanel } from "@/components/sim/SimStatusPanel";
+import { XrayPanel } from "@/components/sim/XrayPanel";
 import type { SimStatus } from "@/lib/sim/api-types";
 import { simApi } from "@/lib/sim/client";
 
@@ -37,6 +38,7 @@ export default function SimPage() {
           <SimStatusPanel status={status} onChange={load} />
           <BreakPicker />
           <AlertsFeed />
+          <XrayPanel simTimeS={status.control?.simTimeS ?? 0} />
         </>
       )}
     </main>

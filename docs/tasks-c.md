@@ -113,4 +113,4 @@ Work through these in order. Run `/implement c` to pick up the next unchecked it
 - [x] **ItemDrawer Live section** — `components/ai/ItemDrawer.tsx`, `components/ai/LiveMetrics.tsx` *(builds; not exercised against a DB)*
   Show `position_metrics` for the selected position with Realtime updates; out-of-range values highlighted (§13).
 
-- [ ] **Stretch: X-ray view** — admin-only toggle on `/sim` showing hidden `sim_part_state` (§17).
+- [x] **Stretch: X-ray view** — admin-only toggle on `/sim` showing hidden `sim_part_state` (§17).
