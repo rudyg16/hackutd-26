@@ -26,7 +26,7 @@ Work through these in order. Run `/implement b` to pick up the next unchecked it
   GET → `{ ticket, workLog }`. Filter `workLog` entries by `canSeeInternal`.
   PATCH `{status?, assigneeId?}` → `Ticket`. Guards apply.
 
-- [ ] **`/api/tickets/[id]/resolve`** — `app/api/tickets/[id]/resolve/route.ts`
+- [x] **`/api/tickets/[id]/resolve`** — `app/api/tickets/[id]/resolve/route.ts`
   POST `{category, action, note}` → `Ticket`. Sets `resolvedAt`, writes a `resolution` work-log entry.
 
 - [ ] **`/api/tickets/[id]/log`** — `app/api/tickets/[id]/log/route.ts`
