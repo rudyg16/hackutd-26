@@ -10,7 +10,7 @@
       "description": "Tenant reports intermittent drops on acme-gpu-07 uplink.",
       "status": "resolved", "severity": "medium", "category": "link_flap",
       "tenantId": "org-acme", "rackId": "rack-C4", "deviceId": "SW-C4-01", "positionId": "SW-C4-01/port-13", "partId": null,
-      "reporterId": "user-jo", "assigneeId": "user-alex",
+      "reporterId": "user-sam", "assigneeId": "user-alex",
       "createdDaysAgo": 21, "resolvedDaysAgo": 21,
       "resolutionAction": "reseated", "resolutionNote": "Cable seated loosely. Reseated, link stable 30 min."
     },
@@ -20,7 +20,7 @@
       "description": "Link flaps x7 in 5 min, same port as last time.",
       "status": "resolved", "severity": "high", "category": "link_flap",
       "tenantId": "org-acme", "rackId": "rack-C4", "deviceId": "SW-C4-01", "positionId": "SW-C4-01/port-13", "partId": null,
-      "reporterId": "user-jo", "assigneeId": "user-sam",
+      "reporterId": "user-sam", "assigneeId": "user-sam",
       "createdDaysAgo": 9, "resolvedDaysAgo": 9,
       "resolutionAction": "reseated", "resolutionNote": "Reseated cable both ends. Noticed slight kink near connector, didn't have spare."
     }

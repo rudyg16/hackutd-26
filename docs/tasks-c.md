@@ -4,7 +4,7 @@ Work through these in order. Run `/implement c` to pick up the next unchecked it
 
 ---
 
-- [ ] **`seed/base.json`** — base seed data
+- [x] **`seed/base.json`** — base seed data
   Produce a JSON object with keys matching DB table names. Must include:
   - **orgs**: `org-northmark` (operator), `org-acme` (tenant), `org-globex` (tenant).
   - **users**: Alex (technician, approved: acme+globex), Sam (technician, approved: acme+globex), Morgan (shift_lead, approved: acme+globex), Kim (tenant_viewer, org: acme), Taylor (tenant_engineer, org: globex), Dana (admin, org: northmark).
