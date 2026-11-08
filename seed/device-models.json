@@ -1,5 +1,5 @@
 {
-  "_doc": "Chassis-builder input. OWNER: Person A. Units mm. Chassis is a box W x H x D (H = u * 44.45). Each face has groups of positions laid out on a grid; origin = bottom-left of that face looking at it. Each generated mesh is named `${prefix}-${n}` and must equal Position.localId. `order`: 'row-major' numbers left->right then next row; 'odd-top' numbers columns top/bottom (1 top, 2 bottom, 3 top...) like real switch faceplates. `parts` lists part kinds that can be installed in that position (rendered as child meshes, e.g. a cable plugged into a port). Dimensions taken from vendor spec sheets for the referenced hardware class.",
+  "_doc": "Chassis-builder input. OWNER: Person A. Units mm. Chassis is a box W x H x D (H = u * 44.45). Each face has groups of positions laid out on a grid; origin = bottom-left of that face looking at it. Each generated mesh is named `${prefix}-${n}` and must equal Position.localId. `order`: 'row-major' numbers left->right then next row; 'odd-top' numbers columns top/bottom (1 top, 2 bottom, 3 top...) like real switch faceplates. `groupEvery`/`groupGap`: a gap of groupGap mm starts a new block every groupEvery positions (in numbering order). Back face x is measured from the left as seen from behind; top face y is measured back from the front edge. `parts` lists part kinds that can be installed in that position (rendered as child meshes, e.g. a cable plugged into a port). Dimensions taken from vendor spec sheets for the referenced hardware class.",
   "models": {
     "switch-48p-1u": {
       "name": "48-port 1U access switch",
@@ -11,7 +11,7 @@
       "faces": {
         "front": [
           { "kind": "port", "prefix": "port", "count": 48, "rows": 2, "cols": 24, "start": [40, 8], "size": [12, 11], "pitch": [14.2, 15], "order": "odd-top", "groupEvery": 12, "groupGap": 6, "parts": ["cable"] },
-          { "kind": "port", "prefix": "uplink", "count": 4, "rows": 1, "cols": 4, "start": [395, 15], "size": [9, 8], "pitch": [11, 0], "order": "row-major", "parts": ["sfp", "cable"] }
+          { "kind": "port", "prefix": "uplink", "count": 4, "rows": 1, "cols": 4, "start": [400, 15], "size": [9, 8], "pitch": [11, 0], "order": "row-major", "parts": ["sfp", "cable"] }
         ],
         "back": [
           { "kind": "psu_bay", "prefix": "psu", "count": 2, "rows": 1, "cols": 2, "start": [20, 4], "size": [70, 36], "pitch": [80, 0], "order": "row-major", "parts": ["psu"] },
