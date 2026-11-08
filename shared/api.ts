@@ -47,9 +47,27 @@ export const routes = {
   ackHandoff: "POST /api/handoffs/:id/ack -> Handoff  (reassigns ticket)",
 } as const;
 
-let currentUserId = "user-alex";
+export const DEFAULT_USER_ID = "user-alex";
+const STORAGE_KEY = "nmc-user-id";
+
+// The simulated login survives page reloads. Read at module load so every fetch made by any
+// page already carries the chosen user (the server has no window, so it just gets the default).
+let currentUserId = DEFAULT_USER_ID;
+if (typeof window !== "undefined") {
+  try {
+    currentUserId = window.localStorage.getItem(STORAGE_KEY) || DEFAULT_USER_ID;
+  } catch {
+    // storage blocked: fall back to the default user
+  }
+}
 export const setCurrentUserId = (id: string) => {
   currentUserId = id;
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(STORAGE_KEY, id);
+  } catch {
+    // storage blocked: the choice just won't survive a reload
+  }
 };
 export const getCurrentUserId = () => currentUserId;
 

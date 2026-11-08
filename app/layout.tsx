@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Orbitron, Share_Tech_Mono } from "next/font/google";
 import "./globals.css";
+import AccountSwitcher from "@/components/board/AccountSwitcher";
 
 const display = Orbitron({ variable: "--font-display-face", subsets: ["latin"] });
 const mono = Share_Tech_Mono({ variable: "--font-mono-body", weight: "400", subsets: ["latin"] });
@@ -36,7 +37,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           </nav>
           <div className="ml-auto flex items-center gap-3 text-sm">
             {/* TODO(Person C): <ReportIssueButton /> */}
-            {/* TODO(Person B): <AccountSwitcher /> */}
+            <AccountSwitcher />
           </div>
         </header>
         <main>{children}</main>

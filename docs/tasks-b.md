@@ -45,7 +45,7 @@ Work through these in order. Run `/implement b` to pick up the next unchecked it
   GET → `User[]` (all, admin only).
   PATCH `{role?, approvedTenantIds?}` → `User` (admin only).
 
-- [ ] **`<AccountSwitcher>`** in `app/layout.tsx`
+- [x] **`<AccountSwitcher>`** in `app/layout.tsx`
   Client component: fetches `/api/users`, renders a `<select>` in the top-right nav slot.
   On change, calls `setCurrentUserId(id)` from `shared/api.ts`. Labels each option as `${name} (${role})`.
 
