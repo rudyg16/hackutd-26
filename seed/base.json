@@ -11,7 +11,8 @@
     {"id":"user-morgan","name":"Morgan Lee","email":"morgan@northmark.example","orgId":"org-northmark","role":"shift_lead","approvedTenantIds":["org-acme","org-globex"],"avatarColor":"#ffb000"},
     {"id":"user-kim","name":"Kim Park","email":"kim@acme.example","orgId":"org-acme","role":"tenant_viewer","approvedTenantIds":[],"avatarColor":"#39ff88"},
     {"id":"user-taylor","name":"Taylor Brooks","email":"taylor@globex.example","orgId":"org-globex","role":"tenant_engineer","approvedTenantIds":[],"avatarColor":"#ff5f1f"},
-    {"id":"user-dana","name":"Dana Cole","email":"dana@northmark.example","orgId":"org-northmark","role":"admin","approvedTenantIds":[],"avatarColor":"#9d7bff"}
+    {"id":"user-dana","name":"Dana Cole","email":"dana@northmark.example","orgId":"org-northmark","role":"admin","approvedTenantIds":[],"avatarColor":"#9d7bff"},
+    {"id":"user-monitor","name":"NorthMark Monitoring","email":"monitoring@northmark.example","orgId":"org-northmark","role":"technician","approvedTenantIds":["org-acme","org-globex"],"avatarColor":"#8a8f98"}
   ],
   "racks": [
     {"id":"rack-C1","label":"C1","row":0,"col":0,"tenantId":"org-acme","heightU":42},
