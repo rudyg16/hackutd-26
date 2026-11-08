@@ -24,11 +24,21 @@ export async function GET(req: NextRequest) {
   const err = racksRes.error ?? devicesRes.error ?? ticketsRes.error;
   if (err) return NextResponse.json({ error: err.message }, { status: 500 });
 
+  // Simulator alerts that nobody has cleared count like open tickets, so a fault glows as soon as it
+  // is detected. If the alerts table isn't there yet (migration 0003 not applied) the floor still works.
+  const alertsRes = await db
+    .from("alerts")
+    .select("rack_id, device_id, position_id, severity")
+    .is("cleared_at", null);
+  const alerts = alertsRes.error ? [] : (alertsRes.data ?? []);
+
+  const problems = [...(ticketsRes.data ?? []), ...alerts];
+
   const visibleRackIds = new Set<string>();
   const worst = new Map<string, Severity>();
   const highlights: Highlight[] = [];
 
-  for (const t of ticketsRes.data ?? []) {
+  for (const t of problems) {
     const sev = t.severity as Severity;
     const cur = worst.get(t.rack_id);
     if (!cur || RANK[sev] > RANK[cur]) worst.set(t.rack_id, sev);
@@ -49,14 +59,20 @@ export async function GET(req: NextRequest) {
       id: d.id, rackId: d.rack_id, kind: d.kind, modelId: d.model_id, uPosition: d.u_position, name: d.name,
     }));
 
-  for (const t of ticketsRes.data ?? []) {
+  // One highlight per position: a ticket and an alert on the same port show the worse of the two.
+  const byPosition = new Map<string, Highlight>();
+  for (const t of problems) {
     if (!t.device_id || !t.position_id || !visibleRackIds.has(t.rack_id)) continue;
-    highlights.push({
+    const sev = t.severity as Severity;
+    const existing = byPosition.get(t.position_id);
+    if (existing && RANK[existing.severity] >= RANK[sev]) continue;
+    byPosition.set(t.position_id, {
       deviceId: t.device_id,
       localId: t.position_id.slice(t.device_id.length + 1),
-      severity: t.severity as Severity,
+      severity: sev,
     });
   }
+  highlights.push(...byPosition.values());
 
   const body: FloorView = { racks, devices, highlights };
   return NextResponse.json(body);

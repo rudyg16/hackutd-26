@@ -29,6 +29,9 @@ const SEVERITY_CLASS: Record<Severity, string> = {
 
 const label = (s: string) => s.replace(/_/g, " ");
 
+/** Tickets the hardware simulator drafts are reported by this user (docs/SIM-SPEC.md section 8). */
+const MONITOR_USER_ID = "user-monitor";
+
 /** "C4 › SW-C4-01 › port-13", built from the ids the ticket already carries. */
 function itemPath(t: Ticket): string {
   const parts = [t.rackId.replace(/^rack-/, "")];
@@ -166,6 +169,11 @@ function Card(props: {
       <div className="flex items-center gap-2 flex-wrap">
         <span className={`border px-1 text-xs uppercase ${SEVERITY_CLASS[t.severity]}`}>{t.severity}</span>
         <span className="text-dim text-xs">{label(t.category)}</span>
+        {t.reporterId === MONITOR_USER_ID && (
+          <span title="Raised by the hardware simulator" aria-label="Raised by the hardware simulator">
+            🤖
+          </span>
+        )}
         {props.replaceSuggested && t.status !== "resolved" && (
           <span className="border border-neon-amber text-neon-amber px-1 text-xs">⚠ Replace?</span>
         )}
