@@ -52,16 +52,39 @@
   ],
   "workLog": [],
   "cachedAi": {
-    "_doc": "Fallback responses keyed by exact demo input, used if the LLM call fails.",
+    "_doc": "Cached AI responses, keyed exactly as the /api/ai route handlers build their fallback strings: draft-ticket:<report trimmed, lowercased, first 80 chars>, known-issue:<positionId>, draft-handoff:<ticketId>. Used when the LLM call fails (completeJson fallback). Ids refer to seed/base.json.",
     "draft-ticket:port 13 on the c4 top switch dropping again": {
       "title": "Repeat link flap on SW-C4-01 port 13",
-      "description": "Technician reports port 13 on the C4 top-of-rack switch dropping again. Third occurrence this month.",
+      "description": "Port 13 on the C4 top-of-rack switch is dropping again. This position has already been flagged several times this month.",
       "severity": "high",
       "category": "link_flap",
       "rackId": "rack-C4",
       "deviceId": "SW-C4-01",
       "positionId": "SW-C4-01/port-13",
       "confidence": 0.93
+    },
+    "known-issue:SW-C4-01/port-13": {
+      "positionId": "SW-C4-01/port-13",
+      "summary": "Reseating hasn't held; replace cable/SFP.",
+      "recommendation": "replace_part"
+    },
+    "draft-handoff:tkt-p13-active": {
+      "note": "Port 13 on SW-C4-01 is still flapping. I've reseated the cable at both ends twice this shift and each time the link only held briefly. There's a visible kink near the connector, so I put in a request for a replacement Cat6A (ETA tomorrow morning). This is the 7th link-flap ticket on this port in 30 days, so the cable is the likely culprit. Sam, please do the swap when the cable arrives, then watch the port for an hour; if it still flaps, move the uplink to a spare port."
+    },
+    "draft-ticket:dimm a5 on the c2 server is throwing ecc errors again": {
+      "title": "Correctable ECC errors on DIMM A5 (SRV-C2-01)",
+      "description": "DIMM A5 on the C2 server is reporting correctable ECC errors again.",
+      "severity": "medium",
+      "category": "ecc_memory",
+      "rackId": "rack-C2",
+      "deviceId": "SRV-C2-01",
+      "positionId": "SRV-C2-01/dimm-A-5",
+      "confidence": 0.88
+    },
+    "known-issue:SRV-C8-01/bay-2": {
+      "positionId": "SRV-C8-01/bay-2",
+      "summary": "Failed drive was replaced 12 days ago and the array rebuilt; no repeat failures since.",
+      "recommendation": "monitor"
     }
   }
 }

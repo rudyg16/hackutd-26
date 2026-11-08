@@ -67,7 +67,7 @@ Work through these in order. Run `/implement c` to pick up the next unchecked it
   - Unacknowledged count badge on the Shift nav link (export a count so layout can render it).
   Wire into `app/shift/page.tsx` above the End Shift form.
 
-- [ ] **`seed/demo.json`** — cached AI responses for the scripted demo
+- [x] **`seed/demo.json`** — cached AI responses for the scripted demo
   Keys are the fallback strings used in the route handlers above. Must cover:
   - `"draft-ticket:port 13 on the c4 top switch dropping again"` → TicketDraft for SW-C4-01/port-13, severity: high, category: link_flap.
   - `"known-issue:SW-C4-01/port-13"` → KnownIssueSummary: "Reseating hasn't held; replace cable/SFP.", recommendation: replace_part.
