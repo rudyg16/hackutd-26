@@ -20,7 +20,7 @@ Work through these in order. Run `/implement c` to pick up the next unchecked it
   - System prompt: given the floor layout (racks, devices, positions), parse the report and return JSON with all `TicketDraft` fields. Zod schema matches `shared/types.ts#TicketDraft`.
   - Fallback key for `seed/demo.json`: `"draft-ticket:${reportText.trim().toLowerCase().slice(0,80)}"`.
 
-- [ ] **`/api/ai/known-issue/[positionId]`** — `app/api/ai/known-issue/[positionId]/route.ts`
+- [x] **`/api/ai/known-issue/[positionId]`** — `app/api/ai/known-issue/[positionId]/route.ts`
   GET → `KnownIssueSummary`.
   - Fetch `PositionHistory` from `/api/positions/:id/history` internally (or replicate the query).
   - Prompt: summarise the history of resolved tickets + part replacements; output `{positionId, summary, recommendation}`.
