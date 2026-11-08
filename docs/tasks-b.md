@@ -22,7 +22,7 @@ Work through these in order. Run `/implement b` to pick up the next unchecked it
   GET `?status=` → `Ticket[]` filtered by status (omit param = all). Guard by `canSeeTenant`.
   POST `{TicketDraft & {status}}` → `Ticket`. Requires `canWorkTenant`.
 
-- [ ] **`/api/tickets/[id]` routes** — `app/api/tickets/[id]/route.ts`
+- [x] **`/api/tickets/[id]` routes** — `app/api/tickets/[id]/route.ts`
   GET → `{ ticket, workLog }`. Filter `workLog` entries by `canSeeInternal`.
   PATCH `{status?, assigneeId?}` → `Ticket`. Guards apply.
 
