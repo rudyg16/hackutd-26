@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { api, getCurrentUserId } from "@/shared/api";
 import type { Severity, Ticket, User } from "@/shared/types";
 import base from "@/seed/base.json";
+import { ShiftBrief } from "@/components/ai/ShiftBrief";
 
 type ShiftTicket = Pick<Ticket, "id" | "title" | "severity" | "status" | "positionId" | "tenantId">;
 type Receiver = Pick<User, "id" | "name">;
@@ -93,7 +94,7 @@ export default function ShiftPage() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-6 p-6">
-      {/* ShiftBrief (incoming handoffs) goes here — see components/ai/ShiftBrief.tsx */}
+      <ShiftBrief />
       <section className="space-y-3">
         <h1 className="text-neon-amber neon-text tracking-widest">END SHIFT</h1>
         <p className="text-sm text-dim">Draft and send a handoff for each open ticket you&apos;re still holding.</p>

@@ -60,7 +60,7 @@ Work through these in order. Run `/implement c` to pick up the next unchecked it
   - "Send" → `api.createHandoff({ticketId, toUserId, note})`.
   - Sent handoffs show a "Sent ✓" state.
 
-- [ ] **`<ShiftBrief>`** — `components/ai/ShiftBrief.tsx`
+- [x] **`<ShiftBrief>`** — `components/ai/ShiftBrief.tsx`
   Fetches `api.handoffs()` on mount and on Realtime INSERT (Person B provides the subscription hook).
   - Lists pending handoffs with ticket title, from-user, note preview.
   - "Acknowledge" → `api.ackHandoff(id)` → reassigns ticket, removes from list.
