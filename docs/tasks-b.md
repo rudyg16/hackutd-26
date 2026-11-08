@@ -38,7 +38,7 @@ Work through these in order. Run `/implement b` to pick up the next unchecked it
 - [x] **`/api/parts/[id]/replace`** — `app/api/parts/[id]/replace/route.ts`
   POST `{serial}` → new `InstalledPart`. Sets `removed_at` on old part, inserts new row, adds `part_replaced` work-log entry on the ticket (if any open ticket targets this position).
 
-- [ ] **`/api/positions/[id]/history`** — `app/api/positions/[id]/history/route.ts`
+- [x] **`/api/positions/[id]/history`** — `app/api/positions/[id]/history/route.ts`
   GET → `PositionHistory`. Assembles position, device, currentParts, all tickets (newest first), all partEvents, repeatFlags (from `lib/rules.ts`).
 
 - [ ] **`/api/users` routes** — `app/api/users/route.ts` and `app/api/users/[id]/route.ts`
