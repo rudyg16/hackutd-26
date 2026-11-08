@@ -11,6 +11,7 @@ import {
   type FailureMode,
   type InvPart,
   type PartCondition,
+  type ResolvedPin,
   type SimCommand,
   type SimInventory,
 } from "./types";
@@ -93,6 +94,7 @@ export function drawInitialConditions(
   nowS: number,
   rng: Rng,
   config: SimConfig,
+  pins: ResolvedPin[] = [],
 ): Record<string, PartCondition> {
   const conditions: Record<string, PartCondition> = {};
 
@@ -105,8 +107,48 @@ export function drawInitialConditions(
     }
   }
 
+  applyPins(conditions, inventory, pins, nowS, config);
   topUpDefects(conditions, inventory, nowS, rng, config);
   return conditions;
+}
+
+/**
+ * Scenario pins override the random draw at their position: any random defect there is
+ * cleared, then the pinned defect is set. Pins count toward the per-tenant minimum.
+ */
+function applyPins(
+  conditions: Record<string, PartCondition>,
+  inventory: SimInventory,
+  pins: ResolvedPin[],
+  nowS: number,
+  config: SimConfig,
+): void {
+  for (const pin of pins) {
+    const pos = inventory.positions[pin.positionId];
+    if (!pos) throw new Error(`Scenario pin: unknown position ${pin.positionId}`);
+    const target = MODE_TARGET[pin.defect];
+
+    // Clear whatever the random draw put at this position.
+    delete conditions[conditionKey(null, pos.id)];
+    for (const part of Object.values(inventory.parts)) {
+      if (part.positionId === pos.id) conditions[conditionKey(part.id, pos.id)] = healthyCondition(part, nowS, config);
+    }
+
+    const base: PartCondition = { partId: null, positionId: pos.id, defect: null, severity: 0, onsetAt: 0, wear: 1, suppressedUntil: null };
+    if (target === "position") {
+      if (pos.kind !== "port") throw new Error(`Scenario pin: ${pin.defect} needs a port, got ${pos.kind} (${pos.id})`);
+      conditions[conditionKey(null, pos.id)] = { ...base, defect: pin.defect, severity: pin.severity, onsetAt: pin.onsetAtS };
+    } else {
+      const part = Object.values(inventory.parts).find((p) => p.positionId === pos.id && p.kind === target);
+      if (!part) throw new Error(`Scenario pin: no ${target} at ${pos.id} for ${pin.defect}`);
+      conditions[conditionKey(part.id, pos.id)] = {
+        ...healthyCondition(part, nowS, config),
+        defect: pin.defect,
+        severity: pin.severity,
+        onsetAt: pin.onsetAtS,
+      };
+    }
+  }
 }
 
 /** Enforces `minDefectsPerTenant`: picks a kind weighted by its defect chance, then a random healthy target. */

@@ -31,7 +31,8 @@ function evaluate(localId: string, m: PositionMetrics, sig: PositionSignals, now
     const flaps = within(sig.flapTimes, nowS, FLAP_RULE_WINDOW_S);
     const downFor = sig.downSince === null ? 0 : nowS - sig.downSince;
 
-    if (flaps >= 3) {
+    // High CRC on a port that is flapping is the same fault (kinked cable): one link_flap alert, not two.
+    if (flaps >= 3 || (m.crcPerMin > 20 && sig.flapTimes.length > 0)) {
       hits.push({
         rule: "flaps",
         category: "link_flap",

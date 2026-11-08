@@ -1,0 +1,15 @@
+{
+  "name": "demo-port13",
+  "description": "Recording run: SW-C4-01 port 13 cable is kinked; first flap 30-90 real seconds in.",
+  "seed": null,
+  "pins": [
+    {
+      "positionId": "SW-C4-01/port-13",
+      "target": "part",
+      "defect": "kinked",
+      "severity": 0.8,
+      "onsetRealSec": [30, 90]
+    }
+  ],
+  "config": { "minDefectsPerTenant": 2 }
+}

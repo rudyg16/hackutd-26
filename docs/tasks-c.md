@@ -87,12 +87,12 @@ Work through these in order. Run `/implement c` to pick up the next unchecked it
 - [x] **Repair feedback** — `lib/sim/engine/repair.ts`
   Apply resolution actions and part replacements to hidden conditions per SIM-SPEC §7 (reseat/clean/config/replace, DOA draw, `bad_port` survives part swaps).
 
-- [ ] **`scripts/sim.ts` + `--dry-run`** — CLI flags (§2), dry-run reads `seed/base.json`, runs N sim-minutes as fast as possible, prints events. Same seed ⇒ identical output. Tune `config.ts` so something notable happens every 60–90 real s at default speed.
+- [x] **`scripts/sim.ts` + `--dry-run`** — CLI flags (§2), dry-run reads `seed/base.json`, runs N sim-minutes as fast as possible, prints events. Same seed ⇒ identical output. Tune `config.ts` so something notable happens every 60–90 real s at default speed.
 
-- [ ] **Scenarios** — `lib/sim/scenarios/demo-port13.json` + loader
+- [x] **Scenarios** — `lib/sim/scenarios/demo-port13.json` + loader
   Pins, optional seed, config overrides (§11). `--scenario demo-port13` makes SW-C4-01/port-13 cable `kinked`, first flap 30–90 real s.
 
-- [ ] **`user-monitor` seed user** — `seed/base.json`
+- [x] **`user-monitor` seed user** — `seed/base.json`
   "NorthMark Monitoring", `org-northmark`, technician, approved acme + globex.
 
 - [ ] **Supabase adapter** — `lib/sim/adapter.ts` *(needs B's sim migration)*

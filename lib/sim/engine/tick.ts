@@ -12,6 +12,7 @@ import { Rng } from "./rng";
 import type {
   PartCondition,
   PositionMetrics,
+  ResolvedPin,
   SimCommand,
   SimEvent,
   SimInventory,
@@ -24,6 +25,8 @@ export interface CreateStateOptions {
   config?: DeepPartial<SimConfig>;
   /** Sim time to start at (default 0). */
   startTimeS?: number;
+  /** Scenario pins (already in sim time) that override the random draw at their positions. */
+  pins?: ResolvedPin[];
 }
 
 export function createState(inventory: SimInventory, opts: CreateStateOptions): SimState {
@@ -31,7 +34,7 @@ export function createState(inventory: SimInventory, opts: CreateStateOptions): 
   const rng = new Rng(opts.seed);
   const simTimeS = opts.startTimeS ?? 0;
 
-  const conditions = drawInitialConditions(inventory, simTimeS, rng, config);
+  const conditions = drawInitialConditions(inventory, simTimeS, rng, config, opts.pins);
   const thermal = initialThermal(inventory, rng, config);
   const metrics = baselineMetrics(inventory, thermal, 0, rng, config);
 
