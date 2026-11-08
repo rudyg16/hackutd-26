@@ -55,9 +55,10 @@ export const SIM_CONFIG: SimConfig = {
   minTicketGapSec: 30,
   maxOpenSimTickets: 8,
   wearPerYear: { cable: 0.5, sfp: 0.4, drive: 0.6, fan: 0.5, dimm: 0.2, psu: 0.3 },
-  // Tuned with `--dry-run` over 8 seeds × 24 sim-h (docs/SIM-SPEC.md §15 table values halved):
-  // ≈20 notable alerts per 24 sim-h ⇒ one every ~70 real s at the default speed of 60.
-  defectChance: { cable: 0.02, sfp: 0.015, drive: 0.01, fan: 0.01, dimm: 0.005, psu: 0.005, port: 0.0025 },
+  // Tuned with `--dry-run` on the full 42U racks (5.4k parts): ≈20 notable alerts per 24 sim-h ⇒ one
+  // every ~70 real s at the default speed of 60. Server parts (drive/fan/dimm) are far rarer per part
+  // than the spec table because each server carries ~50 of them; switch cables/SFPs stay near the spec.
+  defectChance: { cable: 0.016, sfp: 0.012, drive: 0.0016, fan: 0.0016, dimm: 0.0008, psu: 0.004, port: 0.002 },
   modeWeights: {
     cable: { loose: 0.6, kinked: 0.4 },
     sfp: { dirty_optics: 0.7, failing_laser: 0.3 },

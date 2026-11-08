@@ -71,7 +71,8 @@ export async function POST(req: NextRequest) {
   const layout = [
     "Racks: " + racks.map((r) => `${r.id} (label ${r.label})`).join(", "),
     "Devices:",
-    ...devices.map(
+    // Blank panels have nothing to report on; leaving them out keeps the prompt (and token cost) small.
+    ...devices.filter((d) => d.kind !== "filler").map(
       (d) => `- ${d.id} in ${d.rack_id}: ${d.kind} "${d.name}", position ids: ${positionPatterns(d.model_id)}`,
     ),
   ].join("\n");
