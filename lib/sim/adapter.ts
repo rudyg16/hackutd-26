@@ -49,7 +49,7 @@ export class SupabaseStore implements SimStore {
   constructor(private db: SupabaseClient) {}
 
   /** Supabase caps a select at 1000 rows by default, so page through. */
-  private async fetchAll(table: string, select: string, filter?: (q: any) => any): Promise<Row[]> {
+  private async fetchAll(table: string, select: string, filter?: <T extends { is: (c: string, v: null) => T }>(q: T) => T): Promise<Row[]> {
     const out: Row[] = [];
     for (let from = 0; ; from += PAGE) {
       let q = this.db.from(table).select(select).range(from, from + PAGE - 1);
