@@ -66,3 +66,10 @@ Work through these in order. Run `/implement b` to pick up the next unchecked it
 - [x] **Supabase Realtime** — board + handoff badge
   In `app/board/page.tsx`: subscribe to `tickets` INSERT/UPDATE → re-fetch or merge into state.
   In `app/layout.tsx` (or a provider): subscribe to `handoffs` INSERT where `to_user_id = currentUserId` → show a badge count in the nav Shift link.
+
+## Simulator support (docs/SIM-SPEC.md section 16)
+
+- [x] **Migration `0003_simulator_tables.sql`** — `sim_part_state`, `position_metrics`, `alerts`, `sim_control` (with its single row), `sim_commands`; Realtime publication; RLS off for the tables the browser listens to. Apply in the Supabase SQL editor.
+- [x] **`POST /api/tickets` accepts `status: "ai_draft"`** — already supported.
+- [x] **`/api/floor` counts uncleared alerts** in `highlights` and `worstSeverity` (needs `alerts` from 0003; falls back to tickets only if the table is missing).
+- [x] **🤖 marker on board cards** for tickets reported by `user-monitor`.
