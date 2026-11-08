@@ -46,7 +46,7 @@ Work through these in order. Run `/implement c` to pick up the next unchecked it
   - "Approve" → `api.createTicket({...draft, status: "open"})` → closes modal.
   - Loading spinner while drafting; shows confidence badge.
 
-- [ ] **`<ItemDrawer>`** — `components/ai/ItemDrawer.tsx`
+- [x] **`<ItemDrawer>`** — `components/ai/ItemDrawer.tsx`
   Receives `positionId` (from A's `onSelect` callback via `app/page.tsx` aside).
   - Fetches `PositionHistory` via `api.history(positionId)`.
   - Shows ticket list (newest first), part-event timeline.
