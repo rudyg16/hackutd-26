@@ -19,6 +19,7 @@ const NAV = [
   { href: "/", label: "Floor" },
   { href: "/board", label: "Board" },
   { href: "/shift", label: "Shift" },
+  { href: "/sim", label: "Sim" },
   { href: "/admin", label: "Admin" },
 ];
 
