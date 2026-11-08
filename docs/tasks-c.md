@@ -53,21 +53,21 @@ Work through these in order. Run `/implement c` to pick up the next unchecked it
   - If any `RepeatFlag` has `replaceSuggested`, shows ⚠ Replace? badge.
   - Fetches `KnownIssueSummary` via `api.knownIssue(positionId)` and renders `summary` + `recommendation` pill.
 
-- [ ] **`app/shift/page.tsx`** — End Shift flow
+- [x] **`app/shift/page.tsx`** — End Shift flow
   - Lists the current user's open assigned tickets.
   - Per ticket: "Draft handoff" button → calls `api.draftHandoff(ticketId)` → editable textarea pre-filled with the note.
   - Receiver picker: `api.assignable(ticketId)` → dropdown of approved techs (excluding self).
   - "Send" → `api.createHandoff({ticketId, toUserId, note})`.
   - Sent handoffs show a "Sent ✓" state.
 
-- [ ] **`<ShiftBrief>`** — `components/ai/ShiftBrief.tsx`
+- [x] **`<ShiftBrief>`** — `components/ai/ShiftBrief.tsx`
   Fetches `api.handoffs()` on mount and on Realtime INSERT (Person B provides the subscription hook).
   - Lists pending handoffs with ticket title, from-user, note preview.
   - "Acknowledge" → `api.ackHandoff(id)` → reassigns ticket, removes from list.
   - Unacknowledged count badge on the Shift nav link (export a count so layout can render it).
   Wire into `app/shift/page.tsx` above the End Shift form.
 
-- [ ] **`seed/demo.json`** — cached AI responses for the scripted demo
+- [x] **`seed/demo.json`** — cached AI responses for the scripted demo
   Keys are the fallback strings used in the route handlers above. Must cover:
   - `"draft-ticket:port 13 on the c4 top switch dropping again"` → TicketDraft for SW-C4-01/port-13, severity: high, category: link_flap.
   - `"known-issue:SW-C4-01/port-13"` → KnownIssueSummary: "Reseating hasn't held; replace cable/SFP.", recommendation: replace_part.
