@@ -39,7 +39,7 @@ Work through these in order. Run `/implement c` to pick up the next unchecked it
 - [x] **`/api/handoffs/[id]/ack`** — `app/api/handoffs/[id]/ack/route.ts`
   POST → `Handoff`. Sets `acknowledged_at = now()`. Reassigns ticket to `handoff.toUserId` via `PATCH /api/tickets/:id`.
 
-- [ ] **`<ReportModal>`** — `components/ai/ReportModal.tsx`
+- [x] **`<ReportModal>`** — `components/ai/ReportModal.tsx`
   Triggered by a "Report issue" button (wire into `app/layout.tsx` TODO slot).
   - Textarea for free-text report + Submit → calls `api.draftTicket(reportText)`.
   - Shows draft fields (title, description, severity select, category select, rack/device/position path) all editable.
