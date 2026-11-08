@@ -53,7 +53,7 @@ Work through these in order. Run `/implement c` to pick up the next unchecked it
   - If any `RepeatFlag` has `replaceSuggested`, shows ⚠ Replace? badge.
   - Fetches `KnownIssueSummary` via `api.knownIssue(positionId)` and renders `summary` + `recommendation` pill.
 
-- [ ] **`app/shift/page.tsx`** — End Shift flow
+- [x] **`app/shift/page.tsx`** — End Shift flow
   - Lists the current user's open assigned tickets.
   - Per ticket: "Draft handoff" button → calls `api.draftHandoff(ticketId)` → editable textarea pre-filled with the note.
   - Receiver picker: `api.assignable(ticketId)` → dropdown of approved techs (excluding self).
