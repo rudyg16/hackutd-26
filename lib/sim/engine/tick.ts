@@ -7,6 +7,7 @@ import { applyBreak, developsDefect, drawInitialConditions, drawMode, drawOnset,
 import { detect } from "./detect";
 import { baselineMetrics, initialThermal, stepThermal } from "./metrics";
 import { applyModes } from "./modes";
+import { applyRepairEvents } from "./repair";
 import { Rng } from "./rng";
 import type {
   PartCondition,
@@ -42,16 +43,27 @@ const sameMetrics = (a: PositionMetrics | undefined, b: PositionMetrics) => JSON
 /**
  * Advances the simulation by `dtSimS` simulated seconds.
  *
- * `events` (repair feedback, SIM-SPEC §7) are accepted now so the signature is stable;
- * they are applied by `repair.ts`, which is not wired in yet. */
-export function tick(state: SimState, commands: SimCommand[], _events: SimEvent[], dtSimS: number): TickResult {
-  const { config, inventory } = state;
+ * `events` are repair feedback from the app (SIM-SPEC §7), applied first so a fix takes
+ * effect on this tick's metrics. `commands` are "break" requests from /sim.
+ */
+export function tick(state: SimState, commands: SimCommand[], events: SimEvent[], dtSimS: number): TickResult {
+  const { config } = state;
   const rng = new Rng(state.rngState);
   const simTimeS = state.simTimeS + dtSimS;
 
+  // 0. Repair feedback: reseats, cleans, config changes, part swaps.
+  const repaired = applyRepairEvents(state.conditions, state.inventory, events, simTimeS, rng, config);
+  const inventory = repaired.inventory;
+  let priorSignals = state.signals;
+  if (repaired.affectedPositions.length > 0) {
+    // A fix or swap wipes the position's history, so a fix that doesn't hold alerts again cleanly.
+    priorSignals = { ...state.signals };
+    for (const id of repaired.affectedPositions) delete priorSignals[id];
+  }
+
   // Fresh copies of the maps we mutate; the previous state stays untouched.
   const conditions: Record<string, PartCondition> = {};
-  for (const [key, c] of Object.entries(state.conditions)) conditions[key] = { ...c };
+  for (const [key, c] of Object.entries(repaired.conditions)) conditions[key] = { ...c };
 
   // 1. Commands ("break" from /sim).
   const rejectedCommands: SimCommand[] = [];
@@ -78,7 +90,7 @@ export function tick(state: SimState, commands: SimCommand[], _events: SimEvent[
     conditions,
     baseline,
     prevMetrics: state.metrics,
-    signals: state.signals,
+    signals: priorSignals,
     thermal,
     nowS: simTimeS,
     dtS: dtSimS,
@@ -96,7 +108,7 @@ export function tick(state: SimState, commands: SimCommand[], _events: SimEvent[
   }
 
   return {
-    state: { ...state, simTimeS, rngState: rng.state, conditions, thermal, metrics, signals: detected.signals },
+    state: { ...state, simTimeS, rngState: rng.state, inventory, conditions, thermal, metrics, signals: detected.signals },
     changedMetrics,
     alerts: detected.alerts,
     rejectedCommands,

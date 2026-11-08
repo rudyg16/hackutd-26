@@ -84,7 +84,7 @@ Work through these in order. Run `/implement c` to pick up the next unchecked it
 - [x] **Failure catalogue + detection** — `lib/sim/engine/modes.ts`, `lib/sim/engine/detect.ts`
   All 9 failure modes from SIM-SPEC §6 with metric signals (§10), healthy background noise that never crosses thresholds, detection rules → alerts with severity hint and machine-readable message.
 
-- [ ] **Repair feedback** — `lib/sim/engine/repair.ts`
+- [x] **Repair feedback** — `lib/sim/engine/repair.ts`
   Apply resolution actions and part replacements to hidden conditions per SIM-SPEC §7 (reseat/clean/config/replace, DOA draw, `bad_port` survives part swaps).
 
 - [ ] **`scripts/sim.ts` + `--dry-run`** — CLI flags (§2), dry-run reads `seed/base.json`, runs N sim-minutes as fast as possible, prints events. Same seed ⇒ identical output. Tune `config.ts` so something notable happens every 60–90 real s at default speed.
