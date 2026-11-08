@@ -32,7 +32,7 @@ Work through these in order. Run `/implement c` to pick up the next unchecked it
   - Prompt: write a concise shift handoff note covering what's been done, current state, and what to watch.
   - Fallback key: `"draft-handoff:${ticketId}"`.
 
-- [ ] **`/api/handoffs` routes** — `app/api/handoffs/route.ts`
+- [x] **`/api/handoffs` routes** — `app/api/handoffs/route.ts`
   GET `?to=me` → `Handoff[]` where `to_user_id = currentUser.id`, ordered newest first.
   POST `{ticketId, toUserId, note}` → `Handoff`. Checks sender is assigned to the ticket. Adds `handoff` work-log entry.
 
