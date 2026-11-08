@@ -15,7 +15,6 @@ import {
   type PositionSignals,
   type SimInventory,
 } from "./types";
-import { deviceTempC } from "./metrics";
 
 const HOUR = 3600;
 
@@ -70,7 +69,7 @@ export function applyModes(input: ModesInput): {
   metrics: Record<string, PositionMetrics>;
   signals: Record<string, PositionSignals>;
 } {
-  const { inventory, conditions, baseline, prevMetrics, thermal, nowS, dtS, rng } = input;
+  const { inventory, conditions, baseline, prevMetrics, nowS, dtS, rng } = input;
 
   // Active conditions grouped by position, in stable key order.
   const active = new Map<string, PartCondition[]>();
@@ -79,16 +78,6 @@ export function applyModes(input: ModesInput): {
     const list = active.get(cond.positionId) ?? [];
     list.push(cond);
     active.set(cond.positionId, list);
-  }
-
-  // Extra device heat from failing fans.
-  const extraTemp = new Map<string, number>();
-  for (const [positionId, conds] of active) {
-    for (const c of conds) {
-      if (c.defect !== "bearing_wear") continue;
-      const deviceId = inventory.positions[positionId].deviceId;
-      extraTemp.set(deviceId, (extraTemp.get(deviceId) ?? 0) + 38 * progressOf(c, nowS));
-    }
   }
 
   const metrics: Record<string, PositionMetrics> = { ...baseline };
@@ -203,7 +192,7 @@ export function applyModes(input: ModesInput): {
           if (c.defect === "bearing_wear") rpm = Math.max(0, round(rpm * (1 - progressOf(c, nowS))));
         }
         const m: PositionMetrics = { rpm, nominalRpm: b.nominalRpm };
-        if (b.tempC !== undefined) m.tempC = round(deviceTempC(thermal[pos.deviceId]) + (extraTemp.get(pos.deviceId) ?? 0), 1);
+        if (b.tempC !== undefined) m.tempC = b.tempC; // the power module (power.ts) owns the real temperature
         metrics[positionId] = m;
         break;
       }
@@ -220,15 +209,6 @@ export function applyModes(input: ModesInput): {
     }
 
     signals[positionId] = sig;
-  }
-
-  // Heat from failing fans must show even if fan-1 itself is healthy.
-  for (const [deviceId, extra] of extraTemp) {
-    const id = `${deviceId}/fan-1`;
-    const m = metrics[id];
-    if (m && "tempC" in m && m.tempC !== undefined && !touched.has(id)) {
-      metrics[id] = { ...m, tempC: round(m.tempC + extra, 1) };
-    }
   }
 
   return { metrics, signals };

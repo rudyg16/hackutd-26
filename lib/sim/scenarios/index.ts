@@ -5,6 +5,7 @@
 import type { DeepPartial, SimConfig } from "../config";
 import { FAILURE_MODES, MODE_TARGET, type FailureMode, type ResolvedPin } from "../engine/types";
 import { Rng } from "../engine/rng";
+import demoHeat from "./demo-heat.json";
 import demoPort13 from "./demo-port13.json";
 
 export interface ScenarioPin {
@@ -25,7 +26,7 @@ export interface Scenario {
   config?: DeepPartial<SimConfig>;
 }
 
-const REGISTRY: Record<string, unknown> = { "demo-port13": demoPort13 };
+const REGISTRY: Record<string, unknown> = { "demo-port13": demoPort13, "demo-heat": demoHeat };
 
 export const SCENARIO_NAMES = Object.keys(REGISTRY);
 

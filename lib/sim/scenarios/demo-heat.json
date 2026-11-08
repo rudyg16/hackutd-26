@@ -1,0 +1,130 @@
+{
+  "name": "demo-heat",
+  "description": "Power recording run: 3 fans on each of 4 servers in rack C4 wear out 40-100 real s in, so C4's draw and temperatures visibly climb and the rack moves from ok toward warn.",
+  "seed": null,
+  "pins": [
+    {
+      "positionId": "SRV-C4-03/fan-2",
+      "target": "part",
+      "defect": "bearing_wear",
+      "severity": 0.9,
+      "onsetRealSec": [
+        40,
+        55
+      ]
+    },
+    {
+      "positionId": "SRV-C4-03/fan-3",
+      "target": "part",
+      "defect": "bearing_wear",
+      "severity": 0.9,
+      "onsetRealSec": [
+        40,
+        55
+      ]
+    },
+    {
+      "positionId": "SRV-C4-03/fan-4",
+      "target": "part",
+      "defect": "bearing_wear",
+      "severity": 0.9,
+      "onsetRealSec": [
+        40,
+        55
+      ]
+    },
+    {
+      "positionId": "SRV-C4-04/fan-2",
+      "target": "part",
+      "defect": "bearing_wear",
+      "severity": 0.9,
+      "onsetRealSec": [
+        55,
+        70
+      ]
+    },
+    {
+      "positionId": "SRV-C4-04/fan-3",
+      "target": "part",
+      "defect": "bearing_wear",
+      "severity": 0.9,
+      "onsetRealSec": [
+        55,
+        70
+      ]
+    },
+    {
+      "positionId": "SRV-C4-04/fan-4",
+      "target": "part",
+      "defect": "bearing_wear",
+      "severity": 0.9,
+      "onsetRealSec": [
+        55,
+        70
+      ]
+    },
+    {
+      "positionId": "SRV-C4-05/fan-2",
+      "target": "part",
+      "defect": "bearing_wear",
+      "severity": 0.9,
+      "onsetRealSec": [
+        70,
+        85
+      ]
+    },
+    {
+      "positionId": "SRV-C4-05/fan-3",
+      "target": "part",
+      "defect": "bearing_wear",
+      "severity": 0.9,
+      "onsetRealSec": [
+        70,
+        85
+      ]
+    },
+    {
+      "positionId": "SRV-C4-05/fan-4",
+      "target": "part",
+      "defect": "bearing_wear",
+      "severity": 0.9,
+      "onsetRealSec": [
+        70,
+        85
+      ]
+    },
+    {
+      "positionId": "SRV-C4-06/fan-2",
+      "target": "part",
+      "defect": "bearing_wear",
+      "severity": 0.9,
+      "onsetRealSec": [
+        85,
+        100
+      ]
+    },
+    {
+      "positionId": "SRV-C4-06/fan-3",
+      "target": "part",
+      "defect": "bearing_wear",
+      "severity": 0.9,
+      "onsetRealSec": [
+        85,
+        100
+      ]
+    },
+    {
+      "positionId": "SRV-C4-06/fan-4",
+      "target": "part",
+      "defect": "bearing_wear",
+      "severity": 0.9,
+      "onsetRealSec": [
+        85,
+        100
+      ]
+    }
+  ],
+  "config": {
+    "minDefectsPerTenant": 2
+  }
+}

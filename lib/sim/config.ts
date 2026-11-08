@@ -6,6 +6,56 @@ import type { PartKind, DeviceKind } from "@/shared/types";
 
 export type DefectKey = PartKind | "port";
 
+/** Idle and max draw of one component (watts). Draw = idleW + (maxW - idleW) * utilisation. */
+export interface PartPower {
+  idleW: number;
+  maxW: number;
+}
+
+/** Power and thermal model (docs/POWER-SPEC.md §3, §4, §9). */
+export interface PowerConfig {
+  /** Device-level load not tied to a position: CPUs, board, switch ASIC. */
+  base: Partial<Record<DeviceKind, PartPower>>;
+  /**
+   * Per-component draw, keyed `<deviceKind>:<kind>` where kind is the position kind, or `uplink`
+   * for uplink ports. For fans, `maxW` is the draw at the highest fan speed (cube law below that).
+   */
+  components: Record<string, PartPower>;
+  /** Wall draw = internal load / efficiency; the difference is the PSU conversion loss. */
+  psuEfficiency: number;
+  utilisation: {
+    serverMin: number;
+    serverMax: number;
+    switch: number;
+    /** Random-walk step (sd) per tick and pull back toward the middle (0..1 per tick). */
+    stepSd: number;
+    revert: number;
+  };
+  thermal: {
+    ambientC: number;
+    timeConstantSimMin: number;
+    /** Extra silicon draw per °C above `leakageAboveC` (fraction). */
+    leakagePerDegC: number;
+    leakageAboveC: number;
+    maxTempC: number;
+    /** Temperature rise scales with 1 / cooling^exponent (airflow is worse than linear). */
+    coolingExponent: number;
+    /** Healthy fans speed up by this fraction per °C above their baseline (+ deadband), capped at `maxFanSpin`. */
+    fanSpinPerDegC: number;
+    fanSpinDeadbandC: number;
+    maxFanSpin: number;
+  };
+  limits: {
+    rackFactor: number;
+    facilityFactor: number;
+    warnAt: number;
+    criticalAt: number;
+    /** Optional explicit overrides (W). */
+    rackLimitsW?: Record<string, number>;
+    facilityLimitW?: number;
+  };
+}
+
 /** Failure modes per part kind with relative weights (SIM-SPEC §5 table). */
 export type ModeWeights = Record<string, number>;
 
@@ -39,6 +89,7 @@ export interface SimConfig {
   /** Healthy uplink rx power: mean and ± noise (dBm). */
   rxDbmMean: number;
   rxDbmNoise: number;
+  power: PowerConfig;
   /** A rule re-arms only after being quiet this long (sim minutes). */
   alertCooldownSimMin: number;
   /** A rule that keeps firing re-alerts only on a higher severity, or as a reminder this often (sim minutes). */
@@ -79,6 +130,34 @@ export const SIM_CONFIG: SimConfig = {
   rxDbmNoise: 0.3,
   alertCooldownSimMin: 30,
   alertRepeatSimMin: 240,
+  power: {
+    base: { server: { idleW: 110, maxW: 260 }, switch: { idleW: 55, maxW: 75 } },
+    components: {
+      "server:dimm_slot": { idleW: 1.4, maxW: 3.2 },
+      "server:drive_bay": { idleW: 3.5, maxW: 8 },
+      "server:fan_bay": { idleW: 0, maxW: 12 },
+      "switch:port": { idleW: 0.25, maxW: 0.6 },
+      "switch:uplink": { idleW: 1, maxW: 1.6 },
+      "switch:fan_bay": { idleW: 0, maxW: 4 },
+    },
+    psuEfficiency: 0.94,
+    utilisation: { serverMin: 0.3, serverMax: 0.7, switch: 0.5, stepSd: 0.01, revert: 0.02 },
+    thermal: {
+      ambientC: 22,
+      timeConstantSimMin: 8,
+      leakagePerDegC: 0.01,
+      leakageAboveC: 45,
+      maxTempC: 95,
+      coolingExponent: 4.5,
+      fanSpinPerDegC: 0.01,
+      fanSpinDeadbandC: 2,
+      maxFanSpin: 1.25,
+    },
+    // Tuned from the spec's 1.3 / 0.85 (§4): at 1.3 a healthy rack peaked at 79.7% of its limit, right at the
+    // 80% "warn" line, and with 0.85 a healthy facility sat at 0.77 / 0.85 = 90% ("warn") at rest.
+    // 1.4 / 1.0 leave healthy racks near 72% and the facility near 71%; several hot racks still trip it.
+    limits: { rackFactor: 1.4, facilityFactor: 1.0, warnAt: 0.8, criticalAt: 0.95 },
+  },
 };
 
 export type DeepPartial<T> = { [K in keyof T]?: T[K] extends object ? DeepPartial<T[K]> : T[K] };

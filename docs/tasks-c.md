@@ -114,3 +114,9 @@ Work through these in order. Run `/implement c` to pick up the next unchecked it
   Show `position_metrics` for the selected position with Realtime updates; out-of-range values highlighted (§13).
 
 - [x] **Stretch: X-ray view** — admin-only toggle on `/sim` showing hidden `sim_part_state` (§17).
+
+## Power & thermal (see `docs/POWER-SPEC.md`)
+
+- [x] **Power engine** — `lib/sim/engine/power.ts`, config, types, thresholds. **Checks:** `npx tsx scripts/power-check.ts` (4 spec §10 checks, all pass).
+- [x] **/api/power + /power page** — `app/api/power/**`, `app/power/**`, `components/power/**`. Needs a "Power" nav link in `app/layout.tsx` (B).
+- [x] **demo-heat scenario** — `lib/sim/scenarios/demo-heat.json`.

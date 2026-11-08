@@ -7,6 +7,7 @@ import { applyBreak, developsDefect, drawInitialConditions, drawMode, drawOnset,
 import { detect } from "./detect";
 import { baselineMetrics, initialThermal, stepThermal } from "./metrics";
 import { applyModes } from "./modes";
+import { applyPower, initialPower } from "./power";
 import { applyRepairEvents } from "./repair";
 import { Rng } from "./rng";
 import type {
@@ -36,9 +37,13 @@ export function createState(inventory: SimInventory, opts: CreateStateOptions): 
 
   const conditions = drawInitialConditions(inventory, simTimeS, rng, config, opts.pins);
   const thermal = initialThermal(inventory, rng, config);
-  const metrics = baselineMetrics(inventory, thermal, 0, rng, config);
+  const baseline = baselineMetrics(inventory, thermal, 0, rng, config);
+  const powered = applyPower({ inventory, metrics: baseline, thermal, power: initialPower(inventory, thermal, rng, config), dtS: 0, rng, config });
 
-  return { seed: opts.seed, simTimeS, rngState: rng.state, config, inventory, conditions, thermal, metrics, signals: {} };
+  return {
+    seed: opts.seed, simTimeS, rngState: rng.state, config, inventory, conditions, thermal,
+    metrics: powered.metrics, signals: {}, power: powered.power,
+  };
 }
 
 export interface RestoreStateOptions {
@@ -65,8 +70,12 @@ export function restoreState(inventory: SimInventory, opts: RestoreStateOptions)
     if (cond.partId === null && inventory.positions[cond.positionId]) conditions[key] = cond;
   }
   const thermal = initialThermal(inventory, rng, config);
-  const metrics = baselineMetrics(inventory, thermal, 0, rng, config);
-  return { seed: opts.seed, simTimeS: opts.simTimeS, rngState: rng.state, config, inventory, conditions, thermal, metrics, signals: {} };
+  const baseline = baselineMetrics(inventory, thermal, 0, rng, config);
+  const powered = applyPower({ inventory, metrics: baseline, thermal, power: initialPower(inventory, thermal, rng, config), dtS: 0, rng, config });
+  return {
+    seed: opts.seed, simTimeS: opts.simTimeS, rngState: rng.state, config, inventory, conditions, thermal,
+    metrics: powered.metrics, signals: {}, power: powered.power,
+  };
 }
 
 const sameMetrics = (a: PositionMetrics | undefined, b: PositionMetrics) => JSON.stringify(a) === JSON.stringify(b);
@@ -128,7 +137,17 @@ export function tick(state: SimState, commands: SimCommand[], events: SimEvent[]
     rng,
     config,
   });
-  const metrics = modes.metrics;
+  // Power and thermal: draw, temperature and fan speed from the post-failure metrics.
+  const powered = applyPower({
+    inventory,
+    metrics: modes.metrics,
+    thermal,
+    power: state.power,
+    dtS: dtSimS,
+    rng,
+    config,
+  });
+  const metrics = powered.metrics;
 
   // 4. Detection rules → alerts.
   const detected = detect({ inventory, metrics, signals: modes.signals, nowS: simTimeS, config });
@@ -139,7 +158,7 @@ export function tick(state: SimState, commands: SimCommand[], events: SimEvent[]
   }
 
   return {
-    state: { ...state, simTimeS, rngState: rng.state, inventory, conditions, thermal, metrics, signals: detected.signals },
+    state: { ...state, simTimeS, rngState: rng.state, inventory, conditions, thermal, metrics, signals: detected.signals, power: powered.power },
     changedMetrics,
     alerts: detected.alerts,
     rejectedCommands,

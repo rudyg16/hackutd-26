@@ -63,7 +63,7 @@ export class SupabaseStore implements SimStore {
   async loadInventory(): Promise<SimInventory> {
     const [racks, devices, positions, parts] = await Promise.all([
       this.fetchAll("racks", "id, tenant_id"),
-      this.fetchAll("devices", "id, rack_id, kind"),
+      this.fetchAll("devices", "id, rack_id, kind, model_id"),
       this.fetchAll("positions", "id, device_id, local_id, kind"),
       this.fetchAll("installed_parts", "id, position_id, kind, installed_at", (q) => q.is("removed_at", null)),
     ]);
@@ -71,7 +71,12 @@ export class SupabaseStore implements SimStore {
     // Real age becomes sim age: sim time 0 is "now", so existing parts have negative install times.
     return inventoryFromSeed({
       racks: racks.map((r) => ({ id: r.id as string, tenantId: r.tenant_id as string })),
-      devices: devices.map((d) => ({ id: d.id as string, rackId: d.rack_id as string, kind: d.kind as string })),
+      devices: devices.map((d) => ({
+        id: d.id as string,
+        rackId: d.rack_id as string,
+        kind: d.kind as string,
+        modelId: d.model_id as string,
+      })),
       positions: positions.map((p) => ({
         id: p.id as string,
         deviceId: p.device_id as string,

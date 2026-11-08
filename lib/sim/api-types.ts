@@ -52,3 +52,41 @@ export interface XrayRow {
   onsetSimS: number;
   suppressedUntilSimS: number | null;
 }
+
+// ── Power (docs/POWER-SPEC.md §5) ───────────────────────────────────
+export type PowerState = "ok" | "warn" | "critical";
+
+export interface PowerComponent {
+  positionId: string;
+  kind: string;
+  watts: number;
+}
+
+export interface PowerDevice {
+  deviceId: string;
+  kind: string;
+  /** Wall draw: the sum of its PSUs' shares; 0 if every PSU has lost input. */
+  drawW: number;
+  tempC: number;
+  /** Only filled for the rack requested with `?detail=<rackId>`; empty otherwise to keep polling cheap. */
+  components: PowerComponent[];
+}
+
+export interface PowerRack {
+  rackId: string;
+  tenantId: string;
+  tenantName: string;
+  drawW: number;
+  limitW: number;
+  maxTempC: number;
+  state: PowerState;
+  devices: PowerDevice[];
+}
+
+export interface PowerSnapshot {
+  facility: { drawW: number; limitW: number; state: PowerState };
+  racks: PowerRack[];
+  simTimeS: number;
+  /** `sim_control.heartbeat_at`, so the page can show a stale banner like /sim does. */
+  heartbeatAt: string | null;
+}
