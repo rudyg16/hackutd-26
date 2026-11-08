@@ -18,7 +18,7 @@ Work through these in order. Run `/implement b` to pick up the next unchecked it
 - [x] **`/api/floor` route** — `app/api/floor/route.ts`
   GET → `FloorView`. For each rack, check `canSeeTenant(user, rack.tenantId)` for `visible`. Compute `worstSeverity` from open tickets on devices in that rack. Only return devices for visible racks.
 
-- [ ] **`/api/tickets` routes** — `app/api/tickets/route.ts`
+- [x] **`/api/tickets` routes** — `app/api/tickets/route.ts`
   GET `?status=` → `Ticket[]` filtered by status (omit param = all). Guard by `canSeeTenant`.
   POST `{TicketDraft & {status}}` → `Ticket`. Requires `canWorkTenant`.
 
