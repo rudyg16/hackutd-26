@@ -36,6 +36,13 @@ export const OVERVIEW_DIRECTION = new THREE.Vector3(0, 0.75, 1);
 
 const rackHeight = (r: FloorRack) => RACK_BASE * 2 + r.heightU * U;
 
+/**
+ * Which way a rack's front faces along Z: +1 toward the front of the floor, -1 away from it.
+ * Rows alternate like a real hot/cold-aisle layout: rows 0 and 1 stand back-to-back around a hot
+ * aisle, with their fronts on the cold aisles outside.
+ */
+export const rackFacing = (rack: FloorRack): 1 | -1 => (rack.row % 2 === 0 ? 1 : -1);
+
 /** Bottom-centre of a rack on the floor. Row 0 is at the front; the grid is centred on the origin. */
 export function rackOrigin(rack: FloorRack, racks: FloorRack[]): [number, number, number] {
   const cols = Math.max(...racks.map((r) => r.col)) + 1;
@@ -139,6 +146,7 @@ function RackBox({
   return (
     <group
       position={origin}
+      rotation-y={rackFacing(rack) === 1 ? 0 : Math.PI}
       onClick={onClick}
       onPointerOver={(e) => {
         e.stopPropagation();
@@ -200,14 +208,17 @@ export function floorSphere(racks: FloorRack[]) {
 
 // ── Camera ──────────────────────────────────────────────────────────
 type Side = "front" | "back" | "top";
-/** What the camera is zoomed in on: a device, seen from the side its worst problem is on. */
-type Focus = { deviceId: string; side: Side; steep: boolean } | null;
+/**
+ * What the camera is zoomed in on: a device, seen from the side its worst problem is on.
+ * `towardZ` is the world direction (+1/-1 along Z) the camera sits in, after the rack's facing.
+ */
+type Focus = { deviceId: string; side: Side; towardZ: 1 | -1; steep: boolean } | null;
 
 const LOW = Math.tan(THREE.MathUtils.degToRad(25)); // normal viewing angle above the device
 const HIGH = Math.tan(THREE.MathUtils.degToRad(60)); // steep enough to look over a 2 m rack in the way
-function focusDirection(side: Side, steep: boolean) {
-  if (side === "top") return new THREE.Vector3(0, HIGH, 1);
-  return new THREE.Vector3(0, steep ? HIGH : LOW, side === "back" ? -1 : 1);
+function focusDirection(side: Side, towardZ: 1 | -1, steep: boolean) {
+  if (side === "top") return new THREE.Vector3(0, HIGH, towardZ);
+  return new THREE.Vector3(0, steep ? HIGH : LOW, towardZ);
 }
 
 /**
@@ -224,7 +235,7 @@ function CameraRig({
   const camera = useThree((s) => s.camera) as THREE.PerspectiveCamera;
   const { width, height } = useThree((s) => s.size);
   const rackKey = racks.map((r) => `${r.id}:${r.row}:${r.col}`).join(",");
-  const focusKey = focus ? `${focus.deviceId}|${focus.side}|${focus.steep}` : "overview";
+  const focusKey = focus ? `${focus.deviceId}|${focus.side}|${focus.towardZ}|${focus.steep}` : "overview";
 
   // Re-fly only when the focus, canvas size or rack layout changes, not on every floor poll.
   useCameraGlide(() => {
@@ -232,7 +243,7 @@ function CameraRig({
     if (focus && group) {
       group.updateWorldMatrix(true, true);
       const sphere = new THREE.Box3().setFromObject(group).getBoundingSphere(new THREE.Sphere());
-      return fitPose(camera, sphere, focusDirection(focus.side, focus.steep), width / height, 1.25);
+      return fitPose(camera, sphere, focusDirection(focus.side, focus.towardZ, focus.steep), width / height, 1.25);
     }
     return fitPose(camera, floorSphere(racks), OVERVIEW_DIRECTION, width / height, 1.0);
   }, `${focusKey}|${rackKey}|${width}x${height}`);
@@ -297,10 +308,13 @@ export default function FloorScene({
     const lookAt = selectedLocalId ?? worst?.localId;
     const face = lookAt ? (getPositionMesh(group, lookAt)?.userData as PositionMeshData | undefined)?.face : undefined;
     const side: Side = face ?? "front";
-    // Row 0 is at the front, so the rack in front of this one is row - 1 and the one behind is row + 1.
-    const neighbourRow = side === "back" ? rack.row + 1 : rack.row - 1;
+    // The camera sits on the device's front (or top-front) side, or its back, turned by the rack's facing.
+    const towardZ = (side === "back" ? -rackFacing(rack) : rackFacing(rack)) as 1 | -1;
+    // Row 0 is at the front of the floor (+Z), so the rack on the camera's side is row - 1 toward +Z
+    // and row + 1 toward -Z. If one stands there, look down over it.
+    const neighbourRow = towardZ === 1 ? rack.row - 1 : rack.row + 1;
     const steep = side !== "top" && floor.racks.some((r) => r.col === rack.col && r.row === neighbourRow);
-    return { deviceId: device.id, side, steep };
+    return { deviceId: device.id, side, towardZ, steep };
   }, [floor.devices, floor.racks, floor.highlights, selectedDeviceId, selectedLocalId, deviceGroups]);
 
   const [hoveredRackId, setHoveredRackId] = useState<string | null>(null);
