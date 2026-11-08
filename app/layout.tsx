@@ -20,6 +20,7 @@ const NAV = [
   { href: "/board", label: "Board" },
   { href: "/shift", label: "Shift" },
   { href: "/sim", label: "Sim" },
+  { href: "/power", label: "Power" },
   { href: "/admin", label: "Admin" },
 ];
 
