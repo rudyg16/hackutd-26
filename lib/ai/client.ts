@@ -11,7 +11,7 @@ export const llm = new OpenAI({
   baseURL: process.env.GEMINI_BASE_URL ?? GEMINI_BASE_URL,
   apiKey: process.env.GEMINI_API_KEY ?? "unset", // avoid import-time throw; calls fail -> demo fallback
 });
-export const LLM_MODEL = process.env.GEMINI_MODEL ?? "gemini-2.5-flash";
+export const LLM_MODEL = process.env.GEMINI_MODEL ?? "gemini-3.8-flash";
 
 /**
  * Ask for JSON matching `schema`. Retries once with the validation error, then
