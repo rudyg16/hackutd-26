@@ -4,7 +4,7 @@ Work through these in order. Run `/implement a` to pick up the next unchecked it
 
 ---
 
-- [ ] **Chassis builder** — `components/three/chassis.ts`
+- [x] **Chassis builder** — `components/three/chassis.ts`
   Write `buildChassis(model: DeviceModel, positions: Position[]): THREE.Group`.
   - Outer box: `model.width × (model.u × 44.45) × model.depth` mm (scale to scene units as you see fit — keep consistent).
   - For each face in `model.faces`, iterate its groups and generate a grid of box meshes.
@@ -13,7 +13,7 @@ Work through these in order. Run `/implement a` to pick up the next unchecked it
   - Material: dark-panel colour `#0e0f18`, thin neon-cyan wire frame on the face outlines.
   - Export the type `DeviceModel` inferred from `seed/device-models.json["models"][string]`.
 
-- [ ] **DeviceViewer component** — `components/three/DeviceViewer.tsx`
+- [x] **DeviceViewer component** — `components/three/DeviceViewer.tsx`
   ```ts
   interface Props {
     deviceId: string;
@@ -27,7 +27,7 @@ Work through these in order. Run `/implement a` to pick up the next unchecked it
   - On mesh click → `onSelect(mesh.name)`.
   - `OrbitControls` for mouse rotate/zoom.
 
-- [ ] **Floor scene** — `app/page.tsx`
+- [x] **Floor scene** — `app/page.tsx`
   - Load `FloorView` from `/api/floor` (fall back to `seed/base.json` while B's route isn't live).
   - Render 8 racks in a 2-row grid (use `rack.row` / `rack.col`).
   - Each rack box glows by `worstSeverity`: `null` → dim `#262a44`, `low` → `#39ff88`, `medium` → `#ffb000`, `high` → `#ff5f1f`, `critical` → `#ff1f4b`. Use `pointLight` + bloom postprocessing for the neon effect.
@@ -35,11 +35,11 @@ Work through these in order. Run `/implement a` to pick up the next unchecked it
   - Clicking a rack selects it; store `selectedDeviceId` in state.
   - The aside panel gets an `onTicketClick(deviceId)` callback (stubbed for now — B wires open tickets; C wires ItemDrawer).
 
-- [ ] **Camera fly-in** — `app/page.tsx` / `components/three/FloorScene.tsx`
+- [x] **Camera fly-in** — `app/page.tsx` / `components/three/FloorScene.tsx`
   - When `selectedDeviceId` changes, ease the camera to look at that device's rack position (tween position + lookAt over ~0.6 s using `useFrame`).
   - Clicking the canvas background (no rack hit) resets camera to the full floor overview.
 
-- [ ] **Guided repair animation** — `components/three/GuidedRepair.tsx` *(do this last)*
+- [x] **Guided repair animation** — `components/three/GuidedRepair.tsx` *(do this last)*
   ```ts
   interface Step { caption: string; highlightMesh: string; animateFn?: (t: number) => void; }
   interface Props { deviceId: string; steps: Step[]; onDone: () => void; }
