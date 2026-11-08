@@ -49,14 +49,14 @@ Work through these in order. Run `/implement b` to pick up the next unchecked it
   Client component: fetches `/api/users`, renders a `<select>` in the top-right nav slot.
   On change, calls `setCurrentUserId(id)` from `shared/api.ts`. Labels each option as `${name} (${role})`.
 
-- [ ] **`<KanbanBoard>` component** — `components/board/KanbanBoard.tsx`
+- [x] **`<KanbanBoard>` component** — `components/board/KanbanBoard.tsx`
   Four columns: AI Drafts · Open · In Progress · Resolved.
   - Drag a card between columns → `api.patchTicket(id, { status })`.
   - Dropping on **Resolved** opens a resolve modal (`category` dropdown, `action` dropdown, `note` textarea) → `api.resolveTicket`.
   - Card shows: item path (`C4 › SW-C4-01 › port-13`), severity badge (colour by sev token), assignee avatar circle, ⚠ Replace? badge when `replaceSuggested`.
   - Use the HTML5 drag-and-drop API (no extra libs).
 
-- [ ] **Board page** — `app/board/page.tsx`
+- [x] **Board page** — `app/board/page.tsx`
   Loads `api.tickets()`, renders `<KanbanBoard>`. Polling or realtime refresh every 10 s.
 
 - [ ] **Admin page** — `app/admin/page.tsx`
