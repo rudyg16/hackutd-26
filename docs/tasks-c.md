@@ -4,7 +4,7 @@ Work through these in order. Run `/implement c` to pick up the next unchecked it
 
 ---
 
-- [ ] **`seed/base.json`** — base seed data
+- [x] **`seed/base.json`** — base seed data
   Produce a JSON object with keys matching DB table names. Must include:
   - **orgs**: `org-northmark` (operator), `org-acme` (tenant), `org-globex` (tenant).
   - **users**: Alex (technician, approved: acme+globex), Sam (technician, approved: acme+globex), Morgan (shift_lead, approved: acme+globex), Kim (tenant_viewer, org: acme), Taylor (tenant_engineer, org: globex), Dana (admin, org: northmark).
@@ -15,38 +15,38 @@ Work through these in order. Run `/implement c` to pick up the next unchecked it
   - **tickets**: at least 6 resolved `link_flap` tickets on `SW-C4-01/port-13` within last 30 days (to trigger `replace_suggested`), plus a few open tickets on other positions across both tenants.
   - **work_log**: plausible entries for the scripted demo tickets.
 
-- [ ] **`/api/ai/draft-ticket`** — `app/api/ai/draft-ticket/route.ts`
+- [x] **`/api/ai/draft-ticket`** — `app/api/ai/draft-ticket/route.ts`
   POST `{reportText}` → `TicketDraft`.
   - System prompt: given the floor layout (racks, devices, positions), parse the report and return JSON with all `TicketDraft` fields. Zod schema matches `shared/types.ts#TicketDraft`.
   - Fallback key for `seed/demo.json`: `"draft-ticket:${reportText.trim().toLowerCase().slice(0,80)}"`.
 
-- [ ] **`/api/ai/known-issue/[positionId]`** — `app/api/ai/known-issue/[positionId]/route.ts`
+- [x] **`/api/ai/known-issue/[positionId]`** — `app/api/ai/known-issue/[positionId]/route.ts`
   GET → `KnownIssueSummary`.
   - Fetch `PositionHistory` from `/api/positions/:id/history` internally (or replicate the query).
   - Prompt: summarise the history of resolved tickets + part replacements; output `{positionId, summary, recommendation}`.
   - Fallback key: `"known-issue:${positionId}"`.
 
-- [ ] **`/api/ai/draft-handoff`** — `app/api/ai/draft-handoff/route.ts`
+- [x] **`/api/ai/draft-handoff`** — `app/api/ai/draft-handoff/route.ts`
   POST `{ticketId}` → `{note: string}`.
   - Fetch ticket + work-log entries + position history.
   - Prompt: write a concise shift handoff note covering what's been done, current state, and what to watch.
   - Fallback key: `"draft-handoff:${ticketId}"`.
 
-- [ ] **`/api/handoffs` routes** — `app/api/handoffs/route.ts`
+- [x] **`/api/handoffs` routes** — `app/api/handoffs/route.ts`
   GET `?to=me` → `Handoff[]` where `to_user_id = currentUser.id`, ordered newest first.
   POST `{ticketId, toUserId, note}` → `Handoff`. Checks sender is assigned to the ticket. Adds `handoff` work-log entry.
 
-- [ ] **`/api/handoffs/[id]/ack`** — `app/api/handoffs/[id]/ack/route.ts`
+- [x] **`/api/handoffs/[id]/ack`** — `app/api/handoffs/[id]/ack/route.ts`
   POST → `Handoff`. Sets `acknowledged_at = now()`. Reassigns ticket to `handoff.toUserId` via `PATCH /api/tickets/:id`.
 
-- [ ] **`<ReportModal>`** — `components/ai/ReportModal.tsx`
+- [x] **`<ReportModal>`** — `components/ai/ReportModal.tsx`
   Triggered by a "Report issue" button (wire into `app/layout.tsx` TODO slot).
   - Textarea for free-text report + Submit → calls `api.draftTicket(reportText)`.
   - Shows draft fields (title, description, severity select, category select, rack/device/position path) all editable.
   - "Approve" → `api.createTicket({...draft, status: "open"})` → closes modal.
   - Loading spinner while drafting; shows confidence badge.
 
-- [ ] **`<ItemDrawer>`** — `components/ai/ItemDrawer.tsx`
+- [x] **`<ItemDrawer>`** — `components/ai/ItemDrawer.tsx`
   Receives `positionId` (from A's `onSelect` callback via `app/page.tsx` aside).
   - Fetches `PositionHistory` via `api.history(positionId)`.
   - Shows ticket list (newest first), part-event timeline.

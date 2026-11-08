@@ -4,7 +4,9 @@ Implement the next uncompleted task for the person given as `$ARGS` (a, b, or c)
 
 ## Steps
 
-1. **Git hygiene** — run `git pull origin main` to get the latest changes.
+1. **Git hygiene** — never work directly on `main` unless authorized by user.
+   - Run `git branch --show-current`. If it prints `main` (or `master`), stop and ask the user which dedicated branch to use. Do not pick a name yourself. Create it with `git checkout -b <branch>`, or switch to it if it already exists.
+   - Then run `git pull origin main` to merge in the latest changes.
 
 2. **Load the task list** — read `docs/tasks-$ARGS.md`. Find the first line matching `- [ ]`. That is your task. If none exist, report "All tasks done for person $ARGS." and stop.
 
@@ -16,18 +18,19 @@ Implement the next uncompleted task for the person given as `$ARGS` (a, b, or c)
 
 6. **Type-check** — run `npx tsc --noEmit`. Fix any errors before proceeding. If errors are in files you don't own, note them and move on.
 
-7. **Commit** — stage only files you own, then commit:
+7. **Mark done** — in `docs/tasks-$ARGS.md`, change that task's `- [ ]` to `- [x]`.
+
+8. **Commit** — stage only files you own (including the task list), then commit:
    ```
-   git add <your-files-only>
+   git add <your-files-only> docs/tasks-$ARGS.md
    git commit -m "<short present-tense description of what this task does>"
    git push -u origin HEAD
    ```
 
-8. **Mark done** — in `docs/tasks-$ARGS.md`, change that task's `- [ ]` to `- [x]`.
-
 9. **Report** — one line: `Done: <task name>. Next: <next unchecked task title or "all done">`.
 
 ## Rules
+- All work happens on your dedicated branch, never on `main`. Changes reach `main` only through a pull request.
 - Touch only files in your ownership scope (see `CLAUDE.md`).
 - One task per run. Stop after step 9 and wait for the user to run `/implement $ARGS` again.
 - If a dependency from another person isn't built yet, read `seed/base.json` or `seed/demo.json` for static data, then note in your report what you're waiting for.
