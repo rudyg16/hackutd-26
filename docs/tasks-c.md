@@ -78,7 +78,7 @@ Work through these in order. Run `/implement c` to pick up the next unchecked it
 
 ## Hardware simulator (see `docs/SIM-SPEC.md`)
 
-- [ ] **Sim engine core** — `lib/sim/engine/**`, `lib/sim/config.ts`
+- [x] **Sim engine core** — `lib/sim/engine/**`, `lib/sim/config.ts`
   Pure TS, no I/O. Seeded RNG (`rng.ts`), defect draw per part + position-level `bad_port` with per-kind chances, wear, `minDefectsPerTenant` guarantee, onset spread (SIM-SPEC §4–5, §15). `tick(state, commands, events, dtSim)` → `{state, changedMetrics, alerts}`.
 
 - [ ] **Failure catalogue + detection** — `lib/sim/engine/modes.ts`, `lib/sim/engine/detect.ts`
