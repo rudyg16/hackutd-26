@@ -1,0 +1,47 @@
+{
+  "_doc": "Chassis-builder input. OWNER: Person A. Units mm. Chassis is a box W x H x D (H = u * 44.45). Each face has groups of positions laid out on a grid; origin = bottom-left of that face looking at it. Each generated mesh is named `${prefix}-${n}` and must equal Position.localId. `order`: 'row-major' numbers left->right then next row; 'odd-top' numbers columns top/bottom (1 top, 2 bottom, 3 top...) like real switch faceplates. `parts` lists part kinds that can be installed in that position (rendered as child meshes, e.g. a cable plugged into a port). Dimensions taken from vendor spec sheets for the referenced hardware class.",
+  "models": {
+    "switch-48p-1u": {
+      "name": "48-port 1U access switch",
+      "reference": "Cisco Catalyst 9300-48P datasheet: 1RU, 44.5 x 445 x 445 mm, 48x RJ45 + 4x SFP uplink module, 2x PSU, 3x fan",
+      "kind": "switch",
+      "u": 1,
+      "width": 445,
+      "depth": 445,
+      "faces": {
+        "front": [
+          { "kind": "port", "prefix": "port", "count": 48, "rows": 2, "cols": 24, "start": [40, 8], "size": [12, 11], "pitch": [14.2, 15], "order": "odd-top", "groupEvery": 12, "groupGap": 6, "parts": ["cable"] },
+          { "kind": "port", "prefix": "uplink", "count": 4, "rows": 1, "cols": 4, "start": [395, 15], "size": [9, 8], "pitch": [11, 0], "order": "row-major", "parts": ["sfp", "cable"] }
+        ],
+        "back": [
+          { "kind": "psu_bay", "prefix": "psu", "count": 2, "rows": 1, "cols": 2, "start": [20, 4], "size": [70, 36], "pitch": [80, 0], "order": "row-major", "parts": ["psu"] },
+          { "kind": "fan_bay", "prefix": "fan", "count": 3, "rows": 1, "cols": 3, "start": [250, 4], "size": [40, 36], "pitch": [50, 0], "order": "row-major", "parts": ["fan"] }
+        ]
+      }
+    },
+    "server-2u": {
+      "name": "2U dual-socket server, 12 LFF bays",
+      "reference": "Dell PowerEdge R750 technical guide: 2U, 86.8 x 482 x 758 mm, 12x 3.5in front bays, 32 DIMM slots (16 per CPU), 2x PSU, 6 fans",
+      "kind": "server",
+      "u": 2,
+      "width": 445,
+      "depth": 720,
+      "faces": {
+        "front": [
+          { "kind": "drive_bay", "prefix": "bay", "count": 12, "rows": 3, "cols": 4, "start": [30, 4], "size": [101, 25], "pitch": [102, 26.5], "order": "row-major", "parts": ["drive"] }
+        ],
+        "top": [
+          { "kind": "dimm_slot", "prefix": "dimm-A", "count": 16, "rows": 1, "cols": 16, "start": [60, 330], "size": [6, 133], "pitch": [8, 0], "order": "row-major", "parts": ["dimm"] },
+          { "kind": "dimm_slot", "prefix": "dimm-B", "count": 16, "rows": 1, "cols": 16, "start": [260, 330], "size": [6, 133], "pitch": [8, 0], "order": "row-major", "parts": ["dimm"] },
+          { "kind": "fan_bay", "prefix": "fan", "count": 6, "rows": 1, "cols": 6, "start": [40, 200], "size": [60, 60], "pitch": [62, 0], "order": "row-major", "parts": ["fan"] }
+        ],
+        "back": [
+          { "kind": "psu_bay", "prefix": "psu", "count": 2, "rows": 1, "cols": 2, "start": [330, 8], "size": [50, 40], "pitch": [55, 0], "order": "row-major", "parts": ["psu"] }
+        ]
+      }
+    },
+    "pdu-1u": { "name": "1U PDU", "reference": "generic", "kind": "pdu", "u": 1, "width": 445, "depth": 200, "faces": {} },
+    "patch-1u": { "name": "1U patch panel", "reference": "generic", "kind": "patch_panel", "u": 1, "width": 445, "depth": 100, "faces": {} },
+    "filler-1u": { "name": "1U blank", "reference": "generic", "kind": "filler", "u": 1, "width": 445, "depth": 20, "faces": {} }
+  }
+}

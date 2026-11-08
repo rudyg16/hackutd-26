@@ -1,0 +1,40 @@
+{
+  "_doc": "Demo story data. OWNER: Person C. Dates are RELATIVE (daysAgo) so the 30-day repeat window always holds. Story: SW-C4-01/port-13 has link-flapped twice this month, both 'reseated'. The live demo report becomes ticket #3 -> Replace? flag.",
+  "parts": [
+    { "id": "part-c4-p13-cable-1", "positionId": "SW-C4-01/port-13", "kind": "cable", "serial": "CAT6A-88213", "installedDaysAgo": 400, "removedDaysAgo": null }
+  ],
+  "tickets": [
+    {
+      "id": "tkt-seed-p13-1",
+      "title": "Port 13 link flapping on SW-C4-01",
+      "description": "Tenant reports intermittent drops on acme-gpu-07 uplink.",
+      "status": "resolved", "severity": "medium", "category": "link_flap",
+      "tenantId": "org-acme", "rackId": "rack-C4", "deviceId": "SW-C4-01", "positionId": "SW-C4-01/port-13", "partId": null,
+      "reporterId": "user-jo", "assigneeId": "user-alex",
+      "createdDaysAgo": 21, "resolvedDaysAgo": 21,
+      "resolutionAction": "reseated", "resolutionNote": "Cable seated loosely. Reseated, link stable 30 min."
+    },
+    {
+      "id": "tkt-seed-p13-2",
+      "title": "Port 13 down again (SW-C4-01)",
+      "description": "Link flaps x7 in 5 min, same port as last time.",
+      "status": "resolved", "severity": "high", "category": "link_flap",
+      "tenantId": "org-acme", "rackId": "rack-C4", "deviceId": "SW-C4-01", "positionId": "SW-C4-01/port-13", "partId": null,
+      "reporterId": "user-jo", "assigneeId": "user-sam",
+      "createdDaysAgo": 9, "resolvedDaysAgo": 9,
+      "resolutionAction": "reseated", "resolutionNote": "Reseated cable both ends. Noticed slight kink near connector, didn't have spare."
+    }
+  ],
+  "workLog": [],
+  "cachedAi": {
+    "_doc": "Fallback responses keyed by exact demo input, used if the LLM call fails.",
+    "draftTicket": {
+      "port 13 on the C4 top switch dropping again": {
+        "title": "Repeat link flap on SW-C4-01 port 13",
+        "description": "Technician reports port 13 on the C4 top-of-rack switch dropping again. Third occurrence this month.",
+        "severity": "high", "category": "link_flap",
+        "rackId": "rack-C4", "deviceId": "SW-C4-01", "positionId": "SW-C4-01/port-13", "confidence": 0.93
+      }
+    }
+  }
+}

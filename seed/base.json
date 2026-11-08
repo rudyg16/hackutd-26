@@ -1,0 +1,36 @@
+{
+  "_doc": "Starter seed. OWNER: Person C (demo story). Fixed ids so `npm run seed` is idempotent. Positions are generated from seed/device-models.json by scripts/seed.ts; tickets/parts history for the demo go in seed/demo.json.",
+  "orgs": [
+    { "id": "org-northmark", "name": "NorthMark Compute & Cloud", "kind": "operator" },
+    { "id": "org-acme", "name": "Acme Robotics", "kind": "tenant" },
+    { "id": "org-globex", "name": "Globex Media", "kind": "tenant" }
+  ],
+  "users": [
+    { "id": "user-alex", "name": "Alex Rivera", "email": "alex@northmark.example", "orgId": "org-northmark", "role": "technician", "approvedTenantIds": ["org-acme", "org-globex"], "avatarColor": "#00f0ff" },
+    { "id": "user-sam", "name": "Sam Okafor", "email": "sam@northmark.example", "orgId": "org-northmark", "role": "technician", "approvedTenantIds": ["org-acme"], "avatarColor": "#ff2bd6" },
+    { "id": "user-priya", "name": "Priya Shah", "email": "priya@northmark.example", "orgId": "org-northmark", "role": "shift_lead", "approvedTenantIds": ["org-acme", "org-globex"], "avatarColor": "#ffb000" },
+    { "id": "user-morgan", "name": "Morgan Lee", "email": "morgan@northmark.example", "orgId": "org-northmark", "role": "admin", "approvedTenantIds": [], "avatarColor": "#9d7bff" },
+    { "id": "user-jo", "name": "Jo Tanaka", "email": "jo@acme.example", "orgId": "org-acme", "role": "tenant_engineer", "approvedTenantIds": [], "avatarColor": "#39ff88" },
+    { "id": "user-kim", "name": "Kim Park", "email": "kim@acme.example", "orgId": "org-acme", "role": "tenant_viewer", "approvedTenantIds": [], "avatarColor": "#39ff88" },
+    { "id": "user-dana", "name": "Dana Cole", "email": "dana@globex.example", "orgId": "org-globex", "role": "tenant_engineer", "approvedTenantIds": [], "avatarColor": "#ff5f1f" }
+  ],
+  "racks": [
+    { "id": "rack-C1", "label": "C1", "row": 0, "col": 0, "tenantId": "org-acme", "heightU": 42 },
+    { "id": "rack-C2", "label": "C2", "row": 0, "col": 1, "tenantId": "org-acme", "heightU": 42 },
+    { "id": "rack-C3", "label": "C3", "row": 0, "col": 2, "tenantId": "org-globex", "heightU": 42 },
+    { "id": "rack-C4", "label": "C4", "row": 0, "col": 3, "tenantId": "org-acme", "heightU": 42 },
+    { "id": "rack-D1", "label": "D1", "row": 1, "col": 0, "tenantId": "org-globex", "heightU": 42 },
+    { "id": "rack-D2", "label": "D2", "row": 1, "col": 1, "tenantId": "org-globex", "heightU": 42 },
+    { "id": "rack-D3", "label": "D3", "row": 1, "col": 2, "tenantId": "org-acme", "heightU": 42 },
+    { "id": "rack-D4", "label": "D4", "row": 1, "col": 3, "tenantId": "org-globex", "heightU": 42 }
+  ],
+  "devices": [
+    { "id": "SW-C4-01", "rackId": "rack-C4", "kind": "switch", "modelId": "switch-48p-1u", "uPosition": 42, "name": "C4 top-of-rack switch" },
+    { "id": "PP-C4-01", "rackId": "rack-C4", "kind": "patch_panel", "modelId": "patch-1u", "uPosition": 41, "name": "C4 patch panel" },
+    { "id": "SRV-C4-07", "rackId": "rack-C4", "kind": "server", "modelId": "server-2u", "uPosition": 30, "name": "acme-gpu-07" },
+    { "id": "SRV-C4-06", "rackId": "rack-C4", "kind": "server", "modelId": "server-2u", "uPosition": 28, "name": "acme-gpu-06" },
+    { "id": "PDU-C4-A", "rackId": "rack-C4", "kind": "pdu", "modelId": "pdu-1u", "uPosition": 1, "name": "C4 PDU A" },
+    { "id": "SW-C3-01", "rackId": "rack-C3", "kind": "switch", "modelId": "switch-48p-1u", "uPosition": 42, "name": "C3 top-of-rack switch" },
+    { "id": "SRV-C3-02", "rackId": "rack-C3", "kind": "server", "modelId": "server-2u", "uPosition": 30, "name": "globex-enc-02" }
+  ]
+}

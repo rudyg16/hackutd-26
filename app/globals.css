@@ -1,0 +1,66 @@
+@import "tailwindcss";
+
+/* Theme tokens. OWNER: Person B. Cyberpunk / Blade Runner: near-black, neon accents, mono type.
+   Use these via Tailwind classes: bg-bg, bg-panel, text-ink, text-dim, border-line,
+   text-neon-cyan, text-neon-magenta, text-neon-amber, text-sev-critical ... */
+:root {
+  --bg: #07070c;
+  --panel: #0e0f18;
+  --panel-2: #151726;
+  --line: #262a44;
+  --ink: #d9e2ff;
+  --dim: #7a82a8;
+  --neon-cyan: #00f0ff;
+  --neon-magenta: #ff2bd6;
+  --neon-amber: #ffb000;
+  --neon-green: #39ff88;
+  --sev-low: #39ff88;
+  --sev-medium: #ffb000;
+  --sev-high: #ff5f1f;
+  --sev-critical: #ff1f4b;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-panel: var(--panel);
+  --color-panel-2: var(--panel-2);
+  --color-line: var(--line);
+  --color-ink: var(--ink);
+  --color-dim: var(--dim);
+  --color-neon-cyan: var(--neon-cyan);
+  --color-neon-magenta: var(--neon-magenta);
+  --color-neon-amber: var(--neon-amber);
+  --color-neon-green: var(--neon-green);
+  --color-sev-low: var(--sev-low);
+  --color-sev-medium: var(--sev-medium);
+  --color-sev-high: var(--sev-high);
+  --color-sev-critical: var(--sev-critical);
+  --font-sans: var(--font-mono-body);
+  --font-mono: var(--font-mono-body);
+  --font-display: var(--font-display-face);
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-mono-body), ui-monospace, monospace;
+}
+
+/* Faint CRT scanlines over everything except the 3D canvas. */
+body::after {
+  content: "";
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(to bottom, rgba(255, 255, 255, 0.025) 0 1px, transparent 1px 3px);
+  z-index: 50;
+}
+
+.neon-text {
+  text-shadow: 0 0 6px currentColor, 0 0 18px color-mix(in srgb, currentColor 40%, transparent);
+}
+
+.neon-border {
+  border: 1px solid var(--neon-cyan);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--neon-cyan) 50%, transparent), inset 0 0 8px color-mix(in srgb, var(--neon-cyan) 15%, transparent);
+}
