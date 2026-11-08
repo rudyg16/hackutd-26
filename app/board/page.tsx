@@ -2,6 +2,7 @@
 // OWNER: Person B. Ticket board: loads tickets, refreshes every 10 s.
 import { useCallback, useEffect, useState } from "react";
 import KanbanBoard from "@/components/board/KanbanBoard";
+import { useTableChanges } from "@/components/board/useTableChanges";
 import { api } from "@/shared/api";
 import type { Ticket, User } from "@/shared/types";
 
@@ -39,6 +40,9 @@ export default function BoardPage() {
     const timer = setInterval(() => void load(), REFRESH_MS);
     return () => clearInterval(timer);
   }, [load]);
+
+  // Live refresh when anyone changes a ticket; the 10 s poll above stays as a fallback.
+  useTableChanges("tickets", () => void load());
 
   return (
     <div className="p-4">

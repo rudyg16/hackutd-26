@@ -63,6 +63,6 @@ Work through these in order. Run `/implement b` to pick up the next unchecked it
   Table of all users. Each row: name, role select, approved-tenant checkboxes (Acme / Globex).
   On blur/change → `api.patchUser`. Restricted: render empty with "access denied" for non-admins.
 
-- [ ] **Supabase Realtime** — board + handoff badge
+- [x] **Supabase Realtime** — board + handoff badge
   In `app/board/page.tsx`: subscribe to `tickets` INSERT/UPDATE → re-fetch or merge into state.
   In `app/layout.tsx` (or a provider): subscribe to `handoffs` INSERT where `to_user_id = currentUserId` → show a badge count in the nav Shift link.
