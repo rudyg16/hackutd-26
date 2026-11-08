@@ -2,35 +2,39 @@
 // OWNER: Person A (3D floor) + side ticket panel slot.
 import { useState } from "react";
 import FloorScene from "@/components/three/FloorScene";
-import GuidedRepair, { cableSwap, sfpSwap } from "@/components/three/GuidedRepair";
+import GuidedRepair, { guidedRepair, repairFocusRadius, repairLabel } from "@/components/three/GuidedRepair";
 import ItemDrawer from "@/components/ai/ItemDrawer";
 import { getDeviceModel, layoutModel } from "@/components/three/chassis";
 import { USE_SEED, useFloorView } from "@/components/three/useFloorView";
 import type { Device, Highlight, Severity } from "@/shared/types";
 
-type Repair = { deviceId: string; kind: "cable" | "sfp"; localId: string };
+type Repair = { deviceId: string; localId: string; label: string; radius: number };
 
 /**
- * Which guided repairs a device offers: a cable swap on a port that takes a cable, and an SFP swap on one
- * that takes an SFP. Prefers the selected position, then the worst problem position of that type, else the first.
+ * Which guided repairs to offer for a device:
+ * - a position is selected: its walkthrough (if it has one)
+ * - otherwise: one per problem position that has a walkthrough, worst first
+ * - no problems: one practice walkthrough per kind of part the device has (port, uplink, fan, PSU...)
  */
 function repairsFor(device: Device, highlights: Highlight[], selectedLocalId: string | null): Repair[] {
   const slots = layoutModel(getDeviceModel(device.modelId));
-  const problems = highlights
-    .filter((h) => h.deviceId === device.id)
-    .sort((a, b) => RANK[b.severity] - RANK[a.severity])
-    .map((h) => h.localId);
-  const preferred = selectedLocalId ? [selectedLocalId, ...problems] : problems;
-  const pick = (ok: (parts: string[]) => boolean) => {
-    const ids = slots.filter((s) => ok(s.group.parts)).map((s) => s.localId);
-    return preferred.find((id) => ids.includes(id)) ?? ids[0];
+  const repair = (localId: string): Repair | null => {
+    const slot = slots.find((s) => s.localId === localId);
+    const label = slot && repairLabel(slot.group.parts);
+    return slot && label ? { deviceId: device.id, localId, label, radius: repairFocusRadius(slot.group.parts) } : null;
   };
-  const out: Repair[] = [];
-  const cablePort = pick((p) => p.includes("cable") && !p.includes("sfp"));
-  const sfpPort = pick((p) => p.includes("sfp"));
-  if (cablePort) out.push({ deviceId: device.id, kind: "cable", localId: cablePort });
-  if (sfpPort) out.push({ deviceId: device.id, kind: "sfp", localId: sfpPort });
-  return out;
+  const list = (ids: string[]) => ids.map(repair).filter((r): r is Repair => r !== null);
+
+  if (selectedLocalId) return list([selectedLocalId]);
+  const problems = list(
+    highlights
+      .filter((h) => h.deviceId === device.id)
+      .sort((a, b) => RANK[b.severity] - RANK[a.severity])
+      .map((h) => h.localId),
+  );
+  if (problems.length) return problems.filter((r, i) => problems.findIndex((o) => o.localId === r.localId) === i);
+  const practice = list(slots.map((s) => s.localId));
+  return practice.filter((r, i) => practice.findIndex((o) => o.label === r.label) === i);
 }
 
 const RANK: Record<Severity, number> = { low: 1, medium: 2, high: 3, critical: 4 };
@@ -91,9 +95,11 @@ export default function FloorPage() {
         )}
         {repair && (
           <GuidedRepair
-            key={`${repair.deviceId}/${repair.kind}/${repair.localId}`}
+            key={`${repair.deviceId}/${repair.localId}`}
             deviceId={repair.deviceId}
-            steps={repair.kind === "cable" ? cableSwap(repair.localId) : sfpSwap(repair.localId)}
+            steps={guidedRepair(repair.localId)}
+            focusMesh={repair.localId}
+            focusRadius={repair.radius}
             onDone={() => setRepair(null)}
             onCancel={() => setRepair(null)}
           />
@@ -119,17 +125,17 @@ export default function FloorPage() {
             <p className="text-dim">Click a rack or device. Click empty floor to clear.</p>
           )}
           {selected && !positionId && (
-            <p className="mt-1 text-dim">Click a port, bay, fan or PSU on it to see its history.</p>
+            <p className="mt-1 text-dim">Click any part on it (port, drive bay, fan, PSU, memory) to see its history.</p>
           )}
           {repairs.length > 0 && (
             <div className="mt-2 flex flex-wrap gap-2">
               {repairs.map((r) => (
                 <button
-                  key={r.kind}
+                  key={r.localId}
                   className="border border-neon-cyan px-2 py-1 text-neon-cyan"
                   onClick={() => setRepair(r)}
                 >
-                  Guided {r.kind === "cable" ? "cable swap" : "SFP swap"} · {r.localId}
+                  Guided {r.label} · {r.localId}
                 </button>
               ))}
             </div>
