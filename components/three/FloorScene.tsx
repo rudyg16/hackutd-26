@@ -17,7 +17,11 @@ type FloorRack = FloorView["racks"][number];
 interface Props {
   floor: FloorView;
   selectedDeviceId: string | null;
+  /** Selected position on the selected device, e.g. "port-13". The camera views it from its side. */
+  selectedLocalId?: string | null;
   onSelectDevice: (deviceId: string | null) => void;
+  /** Clicking a port, bay, fan or PSU on the device you're zoomed in on. */
+  onSelectPosition?: (deviceId: string, localId: string) => void;
 }
 
 // ── Layout (metres) ─────────────────────────────────────────────────
@@ -90,7 +94,7 @@ function deviceIdOf(obj: THREE.Object3D | null): string | null {
 
 // ── Rack ────────────────────────────────────────────────────────────
 function RackBox({
-  rack, origin, devices, deviceGroups, worstByDevice, selected, onPick, onHover,
+  rack, origin, devices, deviceGroups, worstByDevice, selected, selectedDeviceId, onPick, onPickPosition, onHover,
 }: {
   rack: FloorRack;
   origin: [number, number, number];
@@ -98,7 +102,9 @@ function RackBox({
   deviceGroups: Map<string, THREE.Group>;
   worstByDevice: Map<string, Severity>;
   selected: boolean;
+  selectedDeviceId: string | null;
   onPick: (deviceId: string) => void;
+  onPickPosition: (deviceId: string, localId: string) => void;
   onHover: (rackId: string | null) => void;
 }) {
   const h = rackHeight(rack);
@@ -115,7 +121,17 @@ function RackBox({
   const onClick = (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation();
     if (!rack.visible) return;
-    const hitDevice = e.intersections.map((i) => deviceIdOf(i.object)).find((id) => id !== null);
+    // Nearest thing hit that belongs to a device (skips the see-through rack frame).
+    const hit = e.intersections.find((i) => deviceIdOf(i.object) !== null);
+    const hitDevice = hit ? deviceIdOf(hit.object) : null;
+    // Already zoomed in on this device: a click on one of its positions selects that position.
+    if (hit && hitDevice && hitDevice === selectedDeviceId) {
+      const group = deviceGroups.get(hitDevice);
+      if (group && getPositionMesh(group, hit.object.name) === hit.object) {
+        onPickPosition(hitDevice, hit.object.name);
+        return;
+      }
+    }
     const id = hitDevice ?? defaultDevice();
     if (id) onPick(id);
   };
@@ -225,7 +241,9 @@ function CameraRig({
 }
 
 // ── Scene ───────────────────────────────────────────────────────────
-export default function FloorScene({ floor, selectedDeviceId, onSelectDevice }: Props) {
+export default function FloorScene({
+  floor, selectedDeviceId, selectedLocalId = null, onSelectDevice, onSelectPosition,
+}: Props) {
   // Build each device once; rebuild only when the set of devices changes, not on every poll.
   const deviceKey = floor.devices.map((d) => `${d.id}:${d.modelId}`).join(",");
   const deviceGroups = useMemo(() => {
@@ -265,8 +283,8 @@ export default function FloorScene({ floor, selectedDeviceId, onSelectDevice }: 
 
   const selectedRackId = floor.devices.find((d) => d.id === selectedDeviceId)?.rackId ?? null;
 
-  // Where to fly: the selected device, from the side of its worst problem (front if none),
-  // steeply when another rack stands on that side and would block the view.
+  // Where to fly: the selected device, seen from the side of the selected position, else of its worst
+  // problem (front if none), steeply when another rack stands on that side and would block the view.
   const focus = useMemo<Focus>(() => {
     const device = floor.devices.find((d) => d.id === selectedDeviceId);
     const rack = floor.racks.find((r) => r.id === device?.rackId);
@@ -276,13 +294,14 @@ export default function FloorScene({ floor, selectedDeviceId, onSelectDevice }: 
     for (const h of floor.highlights) {
       if (h.deviceId === device.id && (!worst || RANK[h.severity] > RANK[worst.severity])) worst = h;
     }
-    const face = worst ? (getPositionMesh(group, worst.localId)?.userData as PositionMeshData | undefined)?.face : undefined;
+    const lookAt = selectedLocalId ?? worst?.localId;
+    const face = lookAt ? (getPositionMesh(group, lookAt)?.userData as PositionMeshData | undefined)?.face : undefined;
     const side: Side = face ?? "front";
     // Row 0 is at the front, so the rack in front of this one is row - 1 and the one behind is row + 1.
     const neighbourRow = side === "back" ? rack.row + 1 : rack.row - 1;
     const steep = side !== "top" && floor.racks.some((r) => r.col === rack.col && r.row === neighbourRow);
     return { deviceId: device.id, side, steep };
-  }, [floor.devices, floor.racks, floor.highlights, selectedDeviceId, deviceGroups]);
+  }, [floor.devices, floor.racks, floor.highlights, selectedDeviceId, selectedLocalId, deviceGroups]);
 
   const [hoveredRackId, setHoveredRackId] = useState<string | null>(null);
   useEffect(() => {
@@ -319,7 +338,11 @@ export default function FloorScene({ floor, selectedDeviceId, onSelectDevice }: 
           deviceGroups={deviceGroups}
           worstByDevice={worstByDevice}
           selected={rack.id === selectedRackId}
+          selectedDeviceId={selectedDeviceId}
           onPick={onSelectDevice}
+          onPickPosition={(deviceId, localId) =>
+            onSelectPosition ? onSelectPosition(deviceId, localId) : onSelectDevice(deviceId)
+          }
           onHover={setHoveredRackId}
         />
       ))}
