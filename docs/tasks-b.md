@@ -29,7 +29,7 @@ Work through these in order. Run `/implement b` to pick up the next unchecked it
 - [x] **`/api/tickets/[id]/resolve`** — `app/api/tickets/[id]/resolve/route.ts`
   POST `{category, action, note}` → `Ticket`. Sets `resolvedAt`, writes a `resolution` work-log entry.
 
-- [ ] **`/api/tickets/[id]/log`** — `app/api/tickets/[id]/log/route.ts`
+- [x] **`/api/tickets/[id]/log`** — `app/api/tickets/[id]/log/route.ts`
   POST `{body, internal}` → `WorkLogEntry`. Reject `internal: true` unless `canSeeInternal`.
 
 - [ ] **`/api/tickets/[id]/assignable`** — `app/api/tickets/[id]/assignable/route.ts`
