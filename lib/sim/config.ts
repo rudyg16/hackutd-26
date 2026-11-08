@@ -39,6 +39,10 @@ export interface SimConfig {
   /** Healthy uplink rx power: mean and ± noise (dBm). */
   rxDbmMean: number;
   rxDbmNoise: number;
+  /** A rule re-arms only after being quiet this long (sim minutes). */
+  alertCooldownSimMin: number;
+  /** A rule that keeps firing re-alerts only on a higher severity, or as a reminder this often (sim minutes). */
+  alertRepeatSimMin: number;
 }
 
 export const SIM_CONFIG: SimConfig = {
@@ -70,6 +74,8 @@ export const SIM_CONFIG: SimConfig = {
   crcBlipsPerHour: 1,
   rxDbmMean: -4.5,
   rxDbmNoise: 0.3,
+  alertCooldownSimMin: 30,
+  alertRepeatSimMin: 240,
 };
 
 export type DeepPartial<T> = { [K in keyof T]?: T[K] extends object ? DeepPartial<T[K]> : T[K] };

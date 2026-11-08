@@ -89,6 +89,28 @@ export interface DeviceThermal {
   driftC: number;
 }
 
+/** Short rolling history per position that windowed detection rules need. */
+export interface PositionSignals {
+  /** Sim-times of recent link flaps (kept for 5 sim-min). */
+  flapTimes: number[];
+  /** Sim-times of recent PSU input losses (kept for 10 sim-min). */
+  lossTimes: number[];
+  /** Recent correctable-ECC increments (kept for 1 sim-hour). */
+  eccEvents: Array<{ t: number; n: number }>;
+  /** Sim-time the link went hard-down (dead laser), or null. */
+  downSince: number | null;
+  /** Rule id → last alert time, last time the rule was firing, and the highest severity alerted since it re-armed. */
+  lastAlert: Record<string, { t: number; seenAt: number; severity: Severity }>;
+}
+
+export const emptySignals = (): PositionSignals => ({
+  flapTimes: [],
+  lossTimes: [],
+  eccEvents: [],
+  downSince: null,
+  lastAlert: {},
+});
+
 export interface SimState {
   seed: number;
   /** Simulated seconds since run start. */
@@ -100,6 +122,7 @@ export interface SimState {
   conditions: Record<string, PartCondition>;
   thermal: Record<string, DeviceThermal>;
   metrics: Record<string, PositionMetrics>;
+  signals: Record<string, PositionSignals>;
 }
 
 // ── Inputs and outputs of `tick` ────────────────────────────────────

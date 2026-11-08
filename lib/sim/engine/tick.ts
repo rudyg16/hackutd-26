@@ -4,7 +4,9 @@
  */
 import { mergeConfig, type DeepPartial, type SimConfig } from "../config";
 import { applyBreak, developsDefect, drawInitialConditions, drawMode, drawOnset, wearFor, withDefect } from "./defects";
+import { detect } from "./detect";
 import { baselineMetrics, initialThermal, stepThermal } from "./metrics";
+import { applyModes } from "./modes";
 import { Rng } from "./rng";
 import type {
   PartCondition,
@@ -32,7 +34,7 @@ export function createState(inventory: SimInventory, opts: CreateStateOptions): 
   const thermal = initialThermal(inventory, rng, config);
   const metrics = baselineMetrics(inventory, thermal, 0, rng, config);
 
-  return { seed: opts.seed, simTimeS, rngState: rng.state, config, inventory, conditions, thermal, metrics };
+  return { seed: opts.seed, simTimeS, rngState: rng.state, config, inventory, conditions, thermal, metrics, signals: {} };
 }
 
 const sameMetrics = (a: PositionMetrics | undefined, b: PositionMetrics) => JSON.stringify(a) === JSON.stringify(b);
@@ -41,9 +43,7 @@ const sameMetrics = (a: PositionMetrics | undefined, b: PositionMetrics) => JSON
  * Advances the simulation by `dtSimS` simulated seconds.
  *
  * `events` (repair feedback, SIM-SPEC §7) are accepted now so the signature is stable;
- * they are applied by `repair.ts`. Failure-mode signals and alerts come from `modes.ts`
- * and `detect.ts`, so until those exist `alerts` is empty and metrics are the healthy baseline.
- */
+ * they are applied by `repair.ts`, which is not wired in yet. */
 export function tick(state: SimState, commands: SimCommand[], _events: SimEvent[], dtSimS: number): TickResult {
   const { config, inventory } = state;
   const rng = new Rng(state.rngState);
@@ -70,9 +70,25 @@ export function tick(state: SimState, commands: SimCommand[], _events: SimEvent[
     }
   }
 
-  // 3. Metrics: healthy baseline with noise. (Failure signals overlay here once modes.ts lands.)
+  // 3. Metrics: healthy baseline with noise, then active failure modes layered on top.
   const thermal = stepThermal(state.thermal, rng, config);
-  const metrics = baselineMetrics(inventory, thermal, dtSimS, rng, config);
+  const baseline = baselineMetrics(inventory, thermal, dtSimS, rng, config);
+  const modes = applyModes({
+    inventory,
+    conditions,
+    baseline,
+    prevMetrics: state.metrics,
+    signals: state.signals,
+    thermal,
+    nowS: simTimeS,
+    dtS: dtSimS,
+    rng,
+    config,
+  });
+  const metrics = modes.metrics;
+
+  // 4. Detection rules → alerts.
+  const detected = detect({ inventory, metrics, signals: modes.signals, nowS: simTimeS, config });
 
   const changedMetrics: Record<string, PositionMetrics> = {};
   for (const [positionId, m] of Object.entries(metrics)) {
@@ -80,9 +96,9 @@ export function tick(state: SimState, commands: SimCommand[], _events: SimEvent[
   }
 
   return {
-    state: { ...state, simTimeS, rngState: rng.state, conditions, thermal, metrics },
+    state: { ...state, simTimeS, rngState: rng.state, conditions, thermal, metrics, signals: detected.signals },
     changedMetrics,
-    alerts: [],
+    alerts: detected.alerts,
     rejectedCommands,
   };
 }

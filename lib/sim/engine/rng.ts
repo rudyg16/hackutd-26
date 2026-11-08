@@ -55,6 +55,20 @@ export class Rng {
     return entries[entries.length - 1][0];
   }
 
+  /** Poisson-distributed count with mean `lambda` (Knuth; normal approximation for large means). */
+  poisson(lambda: number): number {
+    if (lambda <= 0) return 0;
+    if (lambda > 30) return Math.max(0, Math.round(lambda + Math.sqrt(lambda) * this.gaussian()));
+    const limit = Math.exp(-lambda);
+    let k = 0;
+    let p = 1;
+    do {
+      k++;
+      p *= this.next();
+    } while (p > limit);
+    return k - 1;
+  }
+
   /** Approximately standard-normal (Box–Muller). */
   gaussian(): number {
     const u = 1 - this.next();
