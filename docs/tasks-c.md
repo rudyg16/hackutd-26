@@ -104,7 +104,7 @@ Work through these in order. Run `/implement c` to pick up the next unchecked it
 - [x] **`--reset`** — `scripts/sim.ts`, `lib/sim/reset.ts` *(not run against a real DB yet)*
   Delete tickets/parts not in `base.json`, re-upsert seeded parts/tickets/work_log, truncate sim tables, redraw (§14).
 
-- [ ] **Sim API routes** — `app/api/sim/**`
+- [x] **Sim API routes** — `app/api/sim/**` *(type-checked only; needs B's sim migration to run)*
   `GET/PATCH /api/sim/control`, `POST /api/sim/commands` (break), `GET /api/sim/alerts` (recent, access-filtered), `GET /api/sim/metrics/[positionId]`. shift_lead/admin for control + commands; `canSeeTenant` for reads.
 
 - [ ] **`/sim` page** — `app/sim/page.tsx`, `components/sim/**`
