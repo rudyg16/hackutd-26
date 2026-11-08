@@ -4,7 +4,7 @@ Work through these in order. Run `/implement b` to pick up the next unchecked it
 
 ---
 
-- [ ] **`lib/rules.ts`** — repeat-flag logic
+- [x] **`lib/rules.ts`** — repeat-flag logic
   Export `getRepeatFlags(positionId: string): Promise<RepeatFlag[]>`.
   - Query `installed_parts` for the most-recent `removed_at` on this position (= last replacement).
   - Query `tickets` for resolved tickets on this position with matching category since that date (or all time if no replacement).
