@@ -9,7 +9,7 @@ Never edit a file you don't own. If you need a cross-person change, stop and des
 |---|---|
 | **A** | `components/three/**` · `app/page.tsx` · `seed/device-models.json` |
 | **B** | `shared/**` · `supabase/**` · `db/**` · `lib/access.ts` · `lib/rules.ts` · `scripts/seed.ts` · `app/layout.tsx` · `app/globals.css` · `app/board/**` · `app/admin/**` · `components/board/**` · `app/api/**` (except `ai/` and `handoffs/`) |
-| **C** | `lib/ai/**` · `app/api/ai/**` · `app/api/handoffs/**` · `app/shift/**` · `components/ai/**` · `seed/base.json` · `seed/demo.json` |
+| **C** | `lib/ai/**` · `app/api/ai/**` · `app/api/handoffs/**` · `app/shift/**` · `components/ai/**` · `seed/base.json` · `seed/demo.json` · `lib/sim/**` · `scripts/sim.ts` · `app/sim/**` · `app/api/sim/**` · `components/sim/**` |
 
 The shared contract (`shared/types.ts`, `shared/api.ts`) is **read-only** for A and C. Changes go through Person B.
 

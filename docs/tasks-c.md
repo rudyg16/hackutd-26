@@ -73,3 +73,44 @@ Work through these in order. Run `/implement c` to pick up the next unchecked it
   - `"known-issue:SW-C4-01/port-13"` → KnownIssueSummary: "Reseating hasn't held; replace cable/SFP.", recommendation: replace_part.
   - `"draft-handoff:<the port-13 ticket id>"` → note covering 2 prior reseats, cable-request work-log, ask Sam to do the swap.
   - Two more fallbacks for variety (another position, another category).
+
+---
+
+## Hardware simulator (see `docs/SIM-SPEC.md`)
+
+- [x] **Sim engine core** — `lib/sim/engine/**`, `lib/sim/config.ts`
+  Pure TS, no I/O. Seeded RNG (`rng.ts`), defect draw per part + position-level `bad_port` with per-kind chances, wear, `minDefectsPerTenant` guarantee, onset spread (SIM-SPEC §4–5, §15). `tick(state, commands, events, dtSim)` → `{state, changedMetrics, alerts}`.
+
+- [x] **Failure catalogue + detection** — `lib/sim/engine/modes.ts`, `lib/sim/engine/detect.ts`
+  All 9 failure modes from SIM-SPEC §6 with metric signals (§10), healthy background noise that never crosses thresholds, detection rules → alerts with severity hint and machine-readable message.
+
+- [ ] **Repair feedback** — `lib/sim/engine/repair.ts`
+  Apply resolution actions and part replacements to hidden conditions per SIM-SPEC §7 (reseat/clean/config/replace, DOA draw, `bad_port` survives part swaps).
+
+- [ ] **`scripts/sim.ts` + `--dry-run`** — CLI flags (§2), dry-run reads `seed/base.json`, runs N sim-minutes as fast as possible, prints events. Same seed ⇒ identical output. Tune `config.ts` so something notable happens every 60–90 real s at default speed.
+
+- [ ] **Scenarios** — `lib/sim/scenarios/demo-port13.json` + loader
+  Pins, optional seed, config overrides (§11). `--scenario demo-port13` makes SW-C4-01/port-13 cable `kinked`, first flap 30–90 real s.
+
+- [ ] **`user-monitor` seed user** — `seed/base.json`
+  "NorthMark Monitoring", `org-northmark`, technician, approved acme + globex.
+
+- [ ] **Supabase adapter** — `lib/sim/adapter.ts` *(needs B's sim migration)*
+  Load parts/positions, persist `sim_part_state`, batched `position_metrics` flush every `flushMs`, insert alerts immediately, heartbeat + sim time to `sim_control`, consume `sim_commands`, read resolved tickets / part changes as repair events.
+
+- [ ] **Alert → ticket pipeline** — in adapter *(needs B's `POST /api/tickets`)*
+  Dedupe (work-log onto existing open ticket), throttle (`minTicketGapSec`, `maxOpenSimTickets`), `draft-ticket` as `user-monitor`, create as `ai_draft`. On failure: log, keep alert with `ticket_id null`, retry on next alert (§8).
+
+- [ ] **`--reset`** — `scripts/sim.ts`
+  Delete tickets/parts not in `base.json`, re-upsert seeded parts/tickets/work_log, truncate sim tables, redraw (§14).
+
+- [ ] **Sim API routes** — `app/api/sim/**`
+  `GET/PATCH /api/sim/control`, `POST /api/sim/commands` (break), `GET /api/sim/alerts` (recent, access-filtered), `GET /api/sim/metrics/[positionId]`. shift_lead/admin for control + commands; `canSeeTenant` for reads.
+
+- [ ] **`/sim` page** — `app/sim/page.tsx`, `components/sim/**`
+  Status + heartbeat, pause/resume, speed slider, Break-something picker (rack → device → position → valid mode), Realtime recent-alerts feed (§12).
+
+- [ ] **ItemDrawer Live section** — `components/ai/ItemDrawer.tsx`
+  Show `position_metrics` for the selected position with Realtime updates; out-of-range values highlighted (§13).
+
+- [ ] **Stretch: X-ray view** — admin-only toggle on `/sim` showing hidden `sim_part_state` (§17).
