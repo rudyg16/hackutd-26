@@ -2,7 +2,7 @@
 // OWNER: Person A. The 3D data-center floor: racks in a grid, glowing by worst open severity,
 // grey when out of the viewer's scope, with each visible rack's devices built by the chassis builder.
 import { useEffect, useMemo, useState } from "react";
-import { Canvas, useThree, type ThreeEvent } from "@react-three/fiber";
+import { Canvas, useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import { Grid, Html, OrbitControls } from "@react-three/drei";
 import { Bloom, EffectComposer } from "@react-three/postprocessing";
 import * as THREE from "three";
@@ -99,9 +99,27 @@ function deviceIdOf(obj: THREE.Object3D | null): string | null {
   return null;
 }
 
+// ── Servers on rails ────────────────────────────────────────────────
+/**
+ * How far a device slides out of the front of its rack on its rails (metres). Like a real technician,
+ * we pull a server out to reach fans and memory under its lid; servers above and below cover its top.
+ */
+export const slideDistance = (modelId: string) => getDeviceModel(modelId).depth * MM * 0.85;
+
+/** A device that eases out to `out` metres along the rack's front (and back in when `out` is 0). */
+function SlidingDevice({ group, out }: { group: THREE.Group; out: number }) {
+  useFrame((_, dt) => {
+    const z = group.position.z;
+    if (Math.abs(out - z) < 1e-4) return;
+    group.position.z = z + (out - z) * (1 - Math.exp(-dt * 7)); // smooth, ~0.5 s
+  });
+  return <primitive object={group} />;
+}
+
 // ── Rack ────────────────────────────────────────────────────────────
 function RackBox({
-  rack, origin, devices, deviceGroups, worstByDevice, selected, selectedDeviceId, onPick, onPickPosition, onHover,
+  rack, origin, devices, deviceGroups, worstByDevice, selected, selectedDeviceId, extendedDeviceId,
+  onPick, onPickPosition, onHover,
 }: {
   rack: FloorRack;
   origin: [number, number, number];
@@ -110,6 +128,8 @@ function RackBox({
   worstByDevice: Map<string, Severity>;
   selected: boolean;
   selectedDeviceId: string | null;
+  /** Device pulled out of this rack on its rails, so parts on its top can be reached. */
+  extendedDeviceId: string | null;
   onPick: (deviceId: string) => void;
   onPickPosition: (deviceId: string, localId: string) => void;
   onHover: (rackId: string | null) => void;
@@ -178,11 +198,9 @@ function RackBox({
             if (!group) return null;
             const depth = getDeviceModel(d.modelId).depth * MM;
             return (
-              <primitive
-                key={d.id}
-                object={group}
-                position={[0, RACK_BASE + (d.uPosition - 1) * U, RACK_D / 2 - depth / 2 - 0.02]}
-              />
+              <group key={d.id} position={[0, RACK_BASE + (d.uPosition - 1) * U, RACK_D / 2 - depth / 2 - 0.02]}>
+                <SlidingDevice group={group} out={d.id === extendedDeviceId ? slideDistance(d.modelId) : 0} />
+              </group>
             );
           })}
         </>
@@ -210,9 +228,11 @@ export function floorSphere(racks: FloorRack[]) {
 type Side = "front" | "back" | "top";
 /**
  * What the camera is zoomed in on: a device, seen from the side its worst problem is on.
- * `towardZ` is the world direction (+1/-1 along Z) the camera sits in, after the rack's facing.
+ * `towardZ` is the world direction (+1/-1 along Z) the camera sits in, after the rack's facing;
+ * `frontZ` the direction the rack's front faces. `slide` > 0 means the device is pulled out on its
+ * rails by that many metres (problems on its top).
  */
-type Focus = { deviceId: string; side: Side; towardZ: 1 | -1; steep: boolean } | null;
+type Focus = { deviceId: string; side: Side; towardZ: 1 | -1; frontZ: 1 | -1; steep: boolean; slide: number } | null;
 
 const LOW = Math.tan(THREE.MathUtils.degToRad(25)); // normal viewing angle above the device
 const HIGH = Math.tan(THREE.MathUtils.degToRad(60)); // steep enough to look over a 2 m rack in the way
@@ -235,7 +255,7 @@ function CameraRig({
   const camera = useThree((s) => s.camera) as THREE.PerspectiveCamera;
   const { width, height } = useThree((s) => s.size);
   const rackKey = racks.map((r) => `${r.id}:${r.row}:${r.col}`).join(",");
-  const focusKey = focus ? `${focus.deviceId}|${focus.side}|${focus.towardZ}|${focus.steep}` : "overview";
+  const focusKey = focus ? `${focus.deviceId}|${focus.side}|${focus.towardZ}|${focus.steep}|${focus.slide}` : "overview";
 
   // Re-fly only when the focus, canvas size or rack layout changes, not on every floor poll.
   useCameraGlide(() => {
@@ -243,6 +263,8 @@ function CameraRig({
     if (focus && group) {
       group.updateWorldMatrix(true, true);
       const sphere = new THREE.Box3().setFromObject(group).getBoundingSphere(new THREE.Sphere());
+      // Aim where the device ends up once it has finished sliding out (or back in) on its rails.
+      sphere.center.z += focus.frontZ * (focus.slide - group.position.z);
       return fitPose(camera, sphere, focusDirection(focus.side, focus.towardZ, focus.steep), width / height, 1.25);
     }
     return fitPose(camera, floorSphere(racks), OVERVIEW_DIRECTION, width / height, 1.0);
@@ -314,7 +336,9 @@ export default function FloorScene({
     // and row + 1 toward -Z. If one stands there, look down over it.
     const neighbourRow = towardZ === 1 ? rack.row - 1 : rack.row + 1;
     const steep = side !== "top" && floor.racks.some((r) => r.col === rack.col && r.row === neighbourRow);
-    return { deviceId: device.id, side, towardZ, steep };
+    // Fans and memory sit under the lid: pull the server out on its rails, as a technician would.
+    const slide = side === "top" ? slideDistance(device.modelId) : 0;
+    return { deviceId: device.id, side, towardZ, frontZ: rackFacing(rack), steep, slide };
   }, [floor.devices, floor.racks, floor.highlights, selectedDeviceId, selectedLocalId, deviceGroups]);
 
   const [hoveredRackId, setHoveredRackId] = useState<string | null>(null);
@@ -353,6 +377,7 @@ export default function FloorScene({
           worstByDevice={worstByDevice}
           selected={rack.id === selectedRackId}
           selectedDeviceId={selectedDeviceId}
+          extendedDeviceId={focus && focus.slide > 0 ? focus.deviceId : null}
           onPick={onSelectDevice}
           onPickPosition={(deviceId, localId) =>
             onSelectPosition ? onSelectPosition(deviceId, localId) : onSelectDevice(deviceId)

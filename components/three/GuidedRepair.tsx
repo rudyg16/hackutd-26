@@ -248,10 +248,19 @@ export function moduleSwap(localId: string): StepFactory {
       if (led instanceof THREE.Mesh) led.material = LED_ON;
       setHighlight(slot, "low");
     };
-    const where = data.face === "top" ? "on top of the server" : `on the ${data.face} panel`;
-    const find: Step = { caption: `Find ${label} ${where}. It's lit up in cyan.`, highlightMesh: oldM.name };
+    // Parts under the lid (server fans): the server is pulled out on its rails and opened first,
+    // then closed and pushed back in at the end. Front/back modules swap with the server in place.
+    const underLid = data.face === "top";
+    const find: Step = {
+      caption: underLid
+        ? `Slide the server out on its rails until they lock, then open the lid. Find ${label}; it's lit up in cyan.`
+        : `Find ${label} on the ${data.face} panel. It's lit up in cyan.`,
+      highlightMesh: oldM.name,
+    };
     const check: Step = {
-      caption: `Check the ${MODULE_NAME[kind]}'s status light: it should turn green.`,
+      caption:
+        `Check the ${MODULE_NAME[kind]}'s status light: it should turn green.` +
+        (underLid ? " Then close the lid and slide the server back into the rack." : ""),
       highlightMesh: `${newM.name}/led`,
       animateFn: (t) => {
         if (t >= 0.3) lightUp();
