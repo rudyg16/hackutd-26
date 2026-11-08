@@ -9,7 +9,7 @@ const DAY_S = 86_400;
 
 export interface SeedLike {
   racks: Array<{ id: string; tenantId: string }>;
-  devices: Array<{ id: string; rackId: string; kind: string }>;
+  devices: Array<{ id: string; rackId: string; kind: string; modelId?: string }>;
   positions: Array<{ id: string; deviceId: string; localId: string; kind: string }>;
   installed_parts: Array<{
     id: string;
@@ -27,7 +27,7 @@ export function inventoryFromSeed(seed: SeedLike): SimInventory {
   for (const d of seed.devices) {
     const tenantId = tenantOfRack.get(d.rackId);
     if (!tenantId) throw new Error(`Device ${d.id}: unknown rack ${d.rackId}`);
-    inventory.devices[d.id] = { id: d.id, kind: d.kind as DeviceKind, rackId: d.rackId, tenantId };
+    inventory.devices[d.id] = { id: d.id, kind: d.kind as DeviceKind, modelId: d.modelId ?? "", rackId: d.rackId, tenantId };
   }
   for (const p of seed.positions) {
     const device = inventory.devices[p.deviceId];

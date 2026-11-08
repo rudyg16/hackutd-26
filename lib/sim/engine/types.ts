@@ -32,6 +32,8 @@ export const MODE_TARGET: Record<FailureMode, PartKind | "position"> = {
 export interface InvDevice {
   id: string;
   kind: DeviceKind;
+  /** Key into seed/device-models.json (used for the healthy-draw reference). */
+  modelId: string;
   rackId: string;
   tenantId: string;
 }
@@ -86,11 +88,11 @@ export const conditionKey = (partId: string | null, positionId: string): string 
 
 // ── Metrics (SIM-SPEC §10) ──────────────────────────────────────────
 export type PositionMetrics =
-  | { link: "up" | "down"; flaps5m: number; crcPerMin: number; rxDbm?: number }
-  | { eccCorrectable: number; eccUncorrectable: number }
-  | { reallocated: number; driveState: "ok" | "degraded" | "failed" }
+  | { link: "up" | "down"; flaps5m: number; crcPerMin: number; rxDbm?: number; watts?: number }
+  | { eccCorrectable: number; eccUncorrectable: number; watts?: number }
+  | { reallocated: number; driveState: "ok" | "degraded" | "failed"; watts?: number }
   /** `tempC` is the device temperature, carried on the device's `fan-1` row. */
-  | { rpm: number; nominalRpm: number; tempC?: number }
+  | { rpm: number; nominalRpm: number; tempC?: number; watts?: number }
   | { psuInput: "ok" | "lost"; watts: number };
 
 // ── State ───────────────────────────────────────────────────────────
@@ -121,6 +123,14 @@ export const emptySignals = (): PositionSignals => ({
   lastAlert: {},
 });
 
+/** Power/thermal engine memory (docs/POWER-SPEC.md §3). Not persisted: a restart re-converges in minutes. */
+export interface PowerState {
+  /** Per-device utilisation (0..1), a slow seeded random walk. */
+  util: Record<string, number>;
+  /** Per-device lagged temperature (°C), before baseline noise. */
+  tempC: Record<string, number>;
+}
+
 export interface SimState {
   seed: number;
   /** Simulated seconds since run start. */
@@ -133,6 +143,7 @@ export interface SimState {
   thermal: Record<string, DeviceThermal>;
   metrics: Record<string, PositionMetrics>;
   signals: Record<string, PositionSignals>;
+  power: PowerState;
 }
 
 // ── Inputs and outputs of `tick` ────────────────────────────────────

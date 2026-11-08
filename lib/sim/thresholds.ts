@@ -11,6 +11,13 @@ export interface MetricReading {
 }
 
 export function readMetrics(m: PositionMetrics): MetricReading[] {
+  const readings = readCore(m);
+  // Modeled power draw (docs/POWER-SPEC.md §3.4); PSUs already show it as "Draw".
+  if (!("psuInput" in m) && m.watts !== undefined) readings.push({ label: "Power", value: `${m.watts} W`, bad: false });
+  return readings;
+}
+
+function readCore(m: PositionMetrics): MetricReading[] {
   if ("link" in m) {
     const out: MetricReading[] = [
       { label: "Link", value: m.link, bad: m.link === "down" },
