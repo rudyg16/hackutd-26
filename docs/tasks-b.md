@@ -41,7 +41,7 @@ Work through these in order. Run `/implement b` to pick up the next unchecked it
 - [x] **`/api/positions/[id]/history`** — `app/api/positions/[id]/history/route.ts`
   GET → `PositionHistory`. Assembles position, device, currentParts, all tickets (newest first), all partEvents, repeatFlags (from `lib/rules.ts`).
 
-- [ ] **`/api/users` routes** — `app/api/users/route.ts` and `app/api/users/[id]/route.ts`
+- [x] **`/api/users` routes** — `app/api/users/route.ts` and `app/api/users/[id]/route.ts`
   GET → `User[]` (all, admin only).
   PATCH `{role?, approvedTenantIds?}` → `User` (admin only).
 
