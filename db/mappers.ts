@@ -1,5 +1,5 @@
 // OWNER: Person B. snake_case DB rows -> camelCase shared types.
-import type { Ticket, WorkLogEntry } from "@/shared/types";
+import type { Ticket, User, WorkLogEntry } from "@/shared/types";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function toTicket(r: any): Ticket {
@@ -34,5 +34,18 @@ export function toWorkLogEntry(r: any): WorkLogEntry {
     body: r.body,
     internal: r.internal,
     createdAt: r.created_at,
+  };
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function toUser(r: any): User {
+  return {
+    id: r.id,
+    name: r.name,
+    email: r.email,
+    orgId: r.org_id,
+    role: r.role,
+    approvedTenantIds: r.approved_tenant_ids,
+    avatarColor: r.avatar_color,
   };
 }

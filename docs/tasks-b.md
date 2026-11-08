@@ -32,7 +32,7 @@ Work through these in order. Run `/implement b` to pick up the next unchecked it
 - [x] **`/api/tickets/[id]/log`** — `app/api/tickets/[id]/log/route.ts`
   POST `{body, internal}` → `WorkLogEntry`. Reject `internal: true` unless `canSeeInternal`.
 
-- [ ] **`/api/tickets/[id]/assignable`** — `app/api/tickets/[id]/assignable/route.ts`
+- [x] **`/api/tickets/[id]/assignable`** — `app/api/tickets/[id]/assignable/route.ts`
   GET → `User[]`. Returns all users where `isAssignable(user, ticket.tenantId)`.
 
 - [ ] **`/api/parts/[id]/replace`** — `app/api/parts/[id]/replace/route.ts`

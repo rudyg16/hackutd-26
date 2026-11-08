@@ -2,7 +2,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import type { TicketStatus, User } from "@/shared/types";
 import { db } from "@/db/client";
-import { toTicket, toWorkLogEntry } from "@/db/mappers";
+import { toTicket, toUser, toWorkLogEntry } from "@/db/mappers";
 import { canSeeInternal, canSeeTenant, canWorkTenant, getCurrentUser, isAssignable } from "@/lib/access";
 
 export const dynamic = "force-dynamic";
@@ -79,11 +79,7 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
 
     if (assigneeId !== null) {
       const { data: cand } = await db.from("users").select("*").eq("id", assigneeId).maybeSingle();
-      const candidate = cand && {
-        id: cand.id, name: cand.name, email: cand.email, orgId: cand.org_id, role: cand.role,
-        approvedTenantIds: cand.approved_tenant_ids, avatarColor: cand.avatar_color,
-      } satisfies User;
-      if (!candidate || !isAssignable(candidate, row.tenant_id)) {
+      if (!cand || !isAssignable(toUser(cand), row.tenant_id)) {
         return err("assignee is not an approved technician for this tenant", 400);
       }
     }
