@@ -108,7 +108,10 @@ export async function runSim(store: SimStore, api: TicketApi, opts: RunOptions =
   let queue: Promise<void> = Promise.resolve();
 
   let cursor = await store.initialCursor();
-  const persisted = new Map<string, string>(Object.entries(state.conditions).map(([k, c]) => [k, conditionSnapshot(c)]));
+  // What the database already holds. On resume, parts with no saved row (new hardware) were just drawn,
+  // so they are NOT persisted yet and the first flush writes them.
+  const alreadySaved = fresh ? state.conditions : (saved?.conditions ?? {});
+  const persisted = new Map<string, string>(Object.entries(alreadySaved).map(([k, c]) => [k, conditionSnapshot(c)]));
   let dirtyMetrics: Record<string, PositionMetrics> = {};
   let lastFlush = now();
   let ticks = 0;

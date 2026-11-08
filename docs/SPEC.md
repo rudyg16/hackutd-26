@@ -49,7 +49,7 @@
 - **Guided repair** (built last): a step-by-step 3D animation of swapping a cable or transceiver, with a caption and a Next button for each step.
 
 ### AI
-- Any OpenAI-compatible endpoint, configured with `LLM_BASE_URL`, `LLM_MODEL` and `LLM_API_KEY`. Credits come from Brev/Nemotron.
+- Google Gemini through its OpenAI-compatible endpoint, configured with `GEMINI_API_KEY` (and optionally `GEMINI_MODEL`, `GEMINI_BASE_URL`). Nemotron/NVIDIA is no longer used.
 - Three prompts: **report → ticket draft**, **known-issue summary**, **handoff note**.
 - Output is structured JSON validated with zod, with one retry. **Cached fallbacks** for the scripted demo inputs live in `seed/demo.json`.
 
