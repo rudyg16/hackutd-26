@@ -59,7 +59,7 @@ Work through these in order. Run `/implement b` to pick up the next unchecked it
 - [x] **Board page** — `app/board/page.tsx`
   Loads `api.tickets()`, renders `<KanbanBoard>`. Polling or realtime refresh every 10 s.
 
-- [ ] **Admin page** — `app/admin/page.tsx`
+- [x] **Admin page** — `app/admin/page.tsx`
   Table of all users. Each row: name, role select, approved-tenant checkboxes (Acme / Globex).
   On blur/change → `api.patchUser`. Restricted: render empty with "access denied" for non-admins.
 
