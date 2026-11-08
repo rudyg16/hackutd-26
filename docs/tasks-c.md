@@ -36,7 +36,7 @@ Work through these in order. Run `/implement c` to pick up the next unchecked it
   GET `?to=me` → `Handoff[]` where `to_user_id = currentUser.id`, ordered newest first.
   POST `{ticketId, toUserId, note}` → `Handoff`. Checks sender is assigned to the ticket. Adds `handoff` work-log entry.
 
-- [ ] **`/api/handoffs/[id]/ack`** — `app/api/handoffs/[id]/ack/route.ts`
+- [x] **`/api/handoffs/[id]/ack`** — `app/api/handoffs/[id]/ack/route.ts`
   POST → `Handoff`. Sets `acknowledged_at = now()`. Reassigns ticket to `handoff.toUserId` via `PATCH /api/tickets/:id`.
 
 - [ ] **`<ReportModal>`** — `components/ai/ReportModal.tsx`
