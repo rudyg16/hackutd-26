@@ -1,14 +1,17 @@
-// OWNER: Person C. Provider-agnostic LLM client: any OpenAI-compatible endpoint
-// (NVIDIA build.nvidia.com / Brev-hosted NIM or vLLM / OpenAI / OpenRouter / Ollama).
+// OWNER: Person C. LLM client: Google Gemini through its OpenAI-compatible endpoint.
+// Configure with GEMINI_API_KEY (required) and, optionally, GEMINI_MODEL / GEMINI_BASE_URL.
+// The old LLM_* (NVIDIA / Nemotron) variables are intentionally ignored.
 import "server-only";
 import OpenAI from "openai";
 import type { z } from "zod";
 
+const GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/openai/";
+
 export const llm = new OpenAI({
-  baseURL: process.env.LLM_BASE_URL,
-  apiKey: process.env.LLM_API_KEY ?? "unset", // avoid import-time throw; calls fail -> demo fallback
+  baseURL: process.env.GEMINI_BASE_URL ?? GEMINI_BASE_URL,
+  apiKey: process.env.GEMINI_API_KEY ?? "unset", // avoid import-time throw; calls fail -> demo fallback
 });
-export const LLM_MODEL = process.env.LLM_MODEL!;
+export const LLM_MODEL = process.env.GEMINI_MODEL ?? "gemini-2.5-flash";
 
 /**
  * Ask for JSON matching `schema`. Retries once with the validation error, then
