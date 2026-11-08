@@ -35,7 +35,7 @@ Work through these in order. Run `/implement b` to pick up the next unchecked it
 - [x] **`/api/tickets/[id]/assignable`** — `app/api/tickets/[id]/assignable/route.ts`
   GET → `User[]`. Returns all users where `isAssignable(user, ticket.tenantId)`.
 
-- [ ] **`/api/parts/[id]/replace`** — `app/api/parts/[id]/replace/route.ts`
+- [x] **`/api/parts/[id]/replace`** — `app/api/parts/[id]/replace/route.ts`
   POST `{serial}` → new `InstalledPart`. Sets `removed_at` on old part, inserts new row, adds `part_replaced` work-log entry on the ticket (if any open ticket targets this position).
 
 - [ ] **`/api/positions/[id]/history`** — `app/api/positions/[id]/history/route.ts`
