@@ -21,7 +21,7 @@
 - Cards show the item path (`C4 › SW-C4-01 › port-13`), severity, the assignee's avatar, and a ⚠ Replace? badge.
 
 ### Repeat rule (deterministic) + AI summary
-- **3 or more resolved tickets on the same position with the same category within 30 days, counting only those since the last part replacement in that position**, sets `replace_suggested`. See the `repeat_flags` view in `supabase/migrations/0001_init.sql`.
+- **3 or more tickets (resolved, open or in progress) on the same position with the same category within 30 days, counting only those since the last part replacement in that position**, sets `replace_suggested`. The ticket being worked now counts, so the live report is what tips a position over. See the `repeat_flags` view in `supabase/migrations/0002_repeat_flags_count_open.sql`.
 - The AI writes a **known-issue summary** from past resolutions. For example: "Reseating hasn't held, so replace the cable or transceiver", or after a replacement, "Cable replaced 6 days ago and the issue persists, so suspect the port; move to port 15 or RMA the switch."
 
 ### Shift handoff
@@ -66,7 +66,7 @@
 3. Alex logs "replacement cable requested" and clicks **End shift**. The AI drafts the handoff note, and Alex sends it to Sam.
 4. **Sam (morning technician)**: a live notice appears. Sam opens the shift brief, acknowledges the ticket (now assigned to Sam), and walks through the **guided cable swap** in 3D. Sam then replaces the part with a new serial and resolves the ticket. The repeat count starts over.
 5. **Kim (Acme tenant viewer)**: sees only Acme's racks, and sees "Resolved — cable replaced" with no internal notes.
-6. *(Optional)* **Morgan (admin)** revokes Sam's Acme approval, and Sam disappears from the handoff picker.
+6. *(Optional)* **Dana (admin)** revokes Sam's Acme approval, and Sam disappears from the handoff picker.
 
 ## Out of scope
 Real authentication, the live alert simulator (seeded alerts only if the team is ahead at hour 8), serial-number tracking across hosts, voice input, mobile layout, deployment.

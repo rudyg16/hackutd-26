@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Orbitron, Share_Tech_Mono } from "next/font/google";
 import "./globals.css";
+import AccountSwitcher from "@/components/board/AccountSwitcher";
+import ShiftBadge from "@/components/board/ShiftBadge";
 
 const display = Orbitron({ variable: "--font-display-face", subsets: ["latin"] });
 const mono = Share_Tech_Mono({ variable: "--font-mono-body", weight: "400", subsets: ["latin"] });
@@ -31,12 +33,13 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             {NAV.map((n) => (
               <Link key={n.href} href={n.href} className="hover:text-neon-magenta">
                 {n.label}
+                {n.href === "/shift" && <ShiftBadge />}
               </Link>
             ))}
           </nav>
           <div className="ml-auto flex items-center gap-3 text-sm">
             {/* TODO(Person C): <ReportIssueButton /> */}
-            {/* TODO(Person B): <AccountSwitcher /> */}
+            <AccountSwitcher />
           </div>
         </header>
         <main>{children}</main>
