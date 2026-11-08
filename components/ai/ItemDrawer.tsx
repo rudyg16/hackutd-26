@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { api } from "@/shared/api";
 import type { KnownIssueSummary, PositionHistory, Severity } from "@/shared/types";
+import { LiveMetrics } from "./LiveMetrics";
 
 const SEV_TEXT: Record<Severity, string> = {
   low: "text-sev-low", medium: "text-sev-medium", high: "text-sev-high", critical: "text-sev-critical",
@@ -81,6 +82,8 @@ export function ItemDrawer({ positionId, onClose }: { positionId: string | null;
           <p className="text-dim">Summarising history…</p>
         )}
       </section>
+
+      <LiveMetrics positionId={positionId} />
 
       {history && (
         <>

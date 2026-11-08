@@ -84,33 +84,33 @@ Work through these in order. Run `/implement c` to pick up the next unchecked it
 - [x] **Failure catalogue + detection** — `lib/sim/engine/modes.ts`, `lib/sim/engine/detect.ts`
   All 9 failure modes from SIM-SPEC §6 with metric signals (§10), healthy background noise that never crosses thresholds, detection rules → alerts with severity hint and machine-readable message.
 
-- [ ] **Repair feedback** — `lib/sim/engine/repair.ts`
+- [x] **Repair feedback** — `lib/sim/engine/repair.ts`
   Apply resolution actions and part replacements to hidden conditions per SIM-SPEC §7 (reseat/clean/config/replace, DOA draw, `bad_port` survives part swaps).
 
-- [ ] **`scripts/sim.ts` + `--dry-run`** — CLI flags (§2), dry-run reads `seed/base.json`, runs N sim-minutes as fast as possible, prints events. Same seed ⇒ identical output. Tune `config.ts` so something notable happens every 60–90 real s at default speed.
+- [x] **`scripts/sim.ts` + `--dry-run`** — CLI flags (§2), dry-run reads `seed/base.json`, runs N sim-minutes as fast as possible, prints events. Same seed ⇒ identical output. Tune `config.ts` so something notable happens every 60–90 real s at default speed.
 
-- [ ] **Scenarios** — `lib/sim/scenarios/demo-port13.json` + loader
+- [x] **Scenarios** — `lib/sim/scenarios/demo-port13.json` + loader
   Pins, optional seed, config overrides (§11). `--scenario demo-port13` makes SW-C4-01/port-13 cable `kinked`, first flap 30–90 real s.
 
-- [ ] **`user-monitor` seed user** — `seed/base.json`
+- [x] **`user-monitor` seed user** — `seed/base.json`
   "NorthMark Monitoring", `org-northmark`, technician, approved acme + globex.
 
-- [ ] **Supabase adapter** — `lib/sim/adapter.ts` *(needs B's sim migration)*
+- [x] **Supabase adapter** — `lib/sim/adapter.ts` *(needs B's sim migration — written to SIM-SPEC §9, run loop tested with an in-memory store, **not yet run against a real DB**)*
   Load parts/positions, persist `sim_part_state`, batched `position_metrics` flush every `flushMs`, insert alerts immediately, heartbeat + sim time to `sim_control`, consume `sim_commands`, read resolved tickets / part changes as repair events.
 
-- [ ] **Alert → ticket pipeline** — in adapter *(needs B's `POST /api/tickets`)*
+- [x] **Alert → ticket pipeline** — `lib/sim/pipeline.ts`, wired in `lib/sim/runner.ts` *(tested with fakes; the real draft-ticket → POST /api/tickets path is untested)*
   Dedupe (work-log onto existing open ticket), throttle (`minTicketGapSec`, `maxOpenSimTickets`), `draft-ticket` as `user-monitor`, create as `ai_draft`. On failure: log, keep alert with `ticket_id null`, retry on next alert (§8).
 
-- [ ] **`--reset`** — `scripts/sim.ts`
+- [x] **`--reset`** — `scripts/sim.ts`, `lib/sim/reset.ts` *(not run against a real DB yet)*
   Delete tickets/parts not in `base.json`, re-upsert seeded parts/tickets/work_log, truncate sim tables, redraw (§14).
 
-- [ ] **Sim API routes** — `app/api/sim/**`
+- [x] **Sim API routes** — `app/api/sim/**` *(type-checked only; needs B's sim migration to run)*
   `GET/PATCH /api/sim/control`, `POST /api/sim/commands` (break), `GET /api/sim/alerts` (recent, access-filtered), `GET /api/sim/metrics/[positionId]`. shift_lead/admin for control + commands; `canSeeTenant` for reads.
 
-- [ ] **`/sim` page** — `app/sim/page.tsx`, `components/sim/**`
+- [x] **`/sim` page** — `app/sim/page.tsx`, `components/sim/**` *(builds; not exercised against a DB; no nav link yet because `app/layout.tsx` is B's)*
   Status + heartbeat, pause/resume, speed slider, Break-something picker (rack → device → position → valid mode), Realtime recent-alerts feed (§12).
 
-- [ ] **ItemDrawer Live section** — `components/ai/ItemDrawer.tsx`
+- [x] **ItemDrawer Live section** — `components/ai/ItemDrawer.tsx`, `components/ai/LiveMetrics.tsx` *(builds; not exercised against a DB)*
   Show `position_metrics` for the selected position with Realtime updates; out-of-range values highlighted (§13).
 
-- [ ] **Stretch: X-ray view** — admin-only toggle on `/sim` showing hidden `sim_part_state` (§17).
+- [x] **Stretch: X-ray view** — admin-only toggle on `/sim` showing hidden `sim_part_state` (§17).

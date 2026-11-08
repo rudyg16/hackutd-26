@@ -50,12 +50,14 @@ export const SIM_CONFIG: SimConfig = {
   tickMs: 1000,
   flushMs: 2000,
   minDefectsPerTenant: 3,
-  onsetWindowSimMin: 60,
+  onsetWindowSimMin: 720, // tuned from the spec's 60: spreads first symptoms over 12 sim-h
   doaChance: 0.02,
   minTicketGapSec: 30,
   maxOpenSimTickets: 8,
   wearPerYear: { cable: 0.5, sfp: 0.4, drive: 0.6, fan: 0.5, dimm: 0.2, psu: 0.3 },
-  defectChance: { cable: 0.04, sfp: 0.03, drive: 0.02, fan: 0.02, dimm: 0.01, psu: 0.01, port: 0.005 },
+  // Tuned with `--dry-run` over 8 seeds × 24 sim-h (docs/SIM-SPEC.md §15 table values halved):
+  // ≈20 notable alerts per 24 sim-h ⇒ one every ~70 real s at the default speed of 60.
+  defectChance: { cable: 0.02, sfp: 0.015, drive: 0.01, fan: 0.01, dimm: 0.005, psu: 0.005, port: 0.0025 },
   modeWeights: {
     cable: { loose: 0.6, kinked: 0.4 },
     sfp: { dirty_optics: 0.7, failing_laser: 0.3 },

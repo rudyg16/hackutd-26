@@ -70,7 +70,7 @@ export function applyModes(input: ModesInput): {
   metrics: Record<string, PositionMetrics>;
   signals: Record<string, PositionSignals>;
 } {
-  const { inventory, conditions, baseline, prevMetrics, thermal, nowS, dtS, rng, config } = input;
+  const { inventory, conditions, baseline, prevMetrics, thermal, nowS, dtS, rng } = input;
 
   // Active conditions grouped by position, in stable key order.
   const active = new Map<string, PartCondition[]>();

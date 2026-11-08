@@ -27,7 +27,7 @@ export function inventoryFromSeed(seed: SeedLike): SimInventory {
   for (const d of seed.devices) {
     const tenantId = tenantOfRack.get(d.rackId);
     if (!tenantId) throw new Error(`Device ${d.id}: unknown rack ${d.rackId}`);
-    inventory.devices[d.id] = { id: d.id, kind: d.kind as DeviceKind, tenantId };
+    inventory.devices[d.id] = { id: d.id, kind: d.kind as DeviceKind, rackId: d.rackId, tenantId };
   }
   for (const p of seed.positions) {
     const device = inventory.devices[p.deviceId];

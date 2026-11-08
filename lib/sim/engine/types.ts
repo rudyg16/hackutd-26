@@ -32,6 +32,7 @@ export const MODE_TARGET: Record<FailureMode, PartKind | "position"> = {
 export interface InvDevice {
   id: string;
   kind: DeviceKind;
+  rackId: string;
   tenantId: string;
 }
 
@@ -56,6 +57,15 @@ export interface SimInventory {
   positions: Record<string, InvPosition>;
   /** Currently installed parts only, keyed by part id. */
   parts: Record<string, InvPart>;
+}
+
+/** A pinned condition from a scenario, already converted to sim time (SIM-SPEC §11). */
+export interface ResolvedPin {
+  positionId: string;
+  defect: FailureMode;
+  severity: number;
+  /** Absolute sim-time (s) the symptoms start. */
+  onsetAtS: number;
 }
 
 // ── Hidden condition (SIM-SPEC §5) ──────────────────────────────────

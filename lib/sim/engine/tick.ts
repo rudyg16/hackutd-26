@@ -3,14 +3,16 @@
  * Pure: no I/O, no Math.random, no clock. Same seed + config + commands ⇒ same output.
  */
 import { mergeConfig, type DeepPartial, type SimConfig } from "../config";
-import { applyBreak, developsDefect, drawInitialConditions, drawMode, drawOnset, wearFor, withDefect } from "./defects";
+import { applyBreak, developsDefect, drawInitialConditions, drawMode, drawOnset, drawPartCondition, wearFor, withDefect } from "./defects";
 import { detect } from "./detect";
 import { baselineMetrics, initialThermal, stepThermal } from "./metrics";
 import { applyModes } from "./modes";
+import { applyRepairEvents } from "./repair";
 import { Rng } from "./rng";
 import type {
   PartCondition,
   PositionMetrics,
+  ResolvedPin,
   SimCommand,
   SimEvent,
   SimInventory,
@@ -23,6 +25,8 @@ export interface CreateStateOptions {
   config?: DeepPartial<SimConfig>;
   /** Sim time to start at (default 0). */
   startTimeS?: number;
+  /** Scenario pins (already in sim time) that override the random draw at their positions. */
+  pins?: ResolvedPin[];
 }
 
 export function createState(inventory: SimInventory, opts: CreateStateOptions): SimState {
@@ -30,11 +34,39 @@ export function createState(inventory: SimInventory, opts: CreateStateOptions): 
   const rng = new Rng(opts.seed);
   const simTimeS = opts.startTimeS ?? 0;
 
-  const conditions = drawInitialConditions(inventory, simTimeS, rng, config);
+  const conditions = drawInitialConditions(inventory, simTimeS, rng, config, opts.pins);
   const thermal = initialThermal(inventory, rng, config);
   const metrics = baselineMetrics(inventory, thermal, 0, rng, config);
 
   return { seed: opts.seed, simTimeS, rngState: rng.state, config, inventory, conditions, thermal, metrics, signals: {} };
+}
+
+export interface RestoreStateOptions {
+  seed: number;
+  simTimeS: number;
+  config?: DeepPartial<SimConfig>;
+  /** Hidden conditions saved by a previous process (keyed like `SimState.conditions`). */
+  conditions: Record<string, PartCondition>;
+}
+
+/**
+ * Rebuilds state from persisted conditions (live resume). Parts with no saved row get a fresh
+ * draw. The RNG restarts from the seed mixed with the sim clock; resumed runs aren't replayable.
+ */
+export function restoreState(inventory: SimInventory, opts: RestoreStateOptions): SimState {
+  const config = mergeConfig(opts.config);
+  const rng = new Rng((opts.seed ^ Math.floor(opts.simTimeS)) >>> 0);
+  const conditions: Record<string, PartCondition> = {};
+  for (const part of Object.values(inventory.parts)) {
+    const saved = opts.conditions[part.id];
+    conditions[part.id] = saved ?? drawPartCondition(part, opts.simTimeS, rng, config);
+  }
+  for (const [key, cond] of Object.entries(opts.conditions)) {
+    if (cond.partId === null && inventory.positions[cond.positionId]) conditions[key] = cond;
+  }
+  const thermal = initialThermal(inventory, rng, config);
+  const metrics = baselineMetrics(inventory, thermal, 0, rng, config);
+  return { seed: opts.seed, simTimeS: opts.simTimeS, rngState: rng.state, config, inventory, conditions, thermal, metrics, signals: {} };
 }
 
 const sameMetrics = (a: PositionMetrics | undefined, b: PositionMetrics) => JSON.stringify(a) === JSON.stringify(b);
@@ -42,16 +74,27 @@ const sameMetrics = (a: PositionMetrics | undefined, b: PositionMetrics) => JSON
 /**
  * Advances the simulation by `dtSimS` simulated seconds.
  *
- * `events` (repair feedback, SIM-SPEC §7) are accepted now so the signature is stable;
- * they are applied by `repair.ts`, which is not wired in yet. */
-export function tick(state: SimState, commands: SimCommand[], _events: SimEvent[], dtSimS: number): TickResult {
-  const { config, inventory } = state;
+ * `events` are repair feedback from the app (SIM-SPEC §7), applied first so a fix takes
+ * effect on this tick's metrics. `commands` are "break" requests from /sim.
+ */
+export function tick(state: SimState, commands: SimCommand[], events: SimEvent[], dtSimS: number): TickResult {
+  const { config } = state;
   const rng = new Rng(state.rngState);
   const simTimeS = state.simTimeS + dtSimS;
 
+  // 0. Repair feedback: reseats, cleans, config changes, part swaps.
+  const repaired = applyRepairEvents(state.conditions, state.inventory, events, simTimeS, rng, config);
+  const inventory = repaired.inventory;
+  let priorSignals = state.signals;
+  if (repaired.affectedPositions.length > 0) {
+    // A fix or swap wipes the position's history, so a fix that doesn't hold alerts again cleanly.
+    priorSignals = { ...state.signals };
+    for (const id of repaired.affectedPositions) delete priorSignals[id];
+  }
+
   // Fresh copies of the maps we mutate; the previous state stays untouched.
   const conditions: Record<string, PartCondition> = {};
-  for (const [key, c] of Object.entries(state.conditions)) conditions[key] = { ...c };
+  for (const [key, c] of Object.entries(repaired.conditions)) conditions[key] = { ...c };
 
   // 1. Commands ("break" from /sim).
   const rejectedCommands: SimCommand[] = [];
@@ -78,7 +121,7 @@ export function tick(state: SimState, commands: SimCommand[], _events: SimEvent[
     conditions,
     baseline,
     prevMetrics: state.metrics,
-    signals: state.signals,
+    signals: priorSignals,
     thermal,
     nowS: simTimeS,
     dtS: dtSimS,
@@ -96,7 +139,7 @@ export function tick(state: SimState, commands: SimCommand[], _events: SimEvent[
   }
 
   return {
-    state: { ...state, simTimeS, rngState: rng.state, conditions, thermal, metrics, signals: detected.signals },
+    state: { ...state, simTimeS, rngState: rng.state, inventory, conditions, thermal, metrics, signals: detected.signals },
     changedMetrics,
     alerts: detected.alerts,
     rejectedCommands,
