@@ -6,11 +6,11 @@ import { api } from "@/shared/api";
 import type { Device, FloorView, Highlight, Rack, Severity } from "@/shared/types";
 
 /**
- * true  = build the floor from seed/base.json (the shared DB still has leftover racks and no open tickets).
- * false = GET /api/floor every few seconds (server decides visibility; picks up simulator faults live).
- * Flip to false once the database is reseeded.
+ * false = GET /api/floor every few seconds: the server decides what the current user may see
+ *         (technicians only their assigned racks) and simulator faults show up live.
+ * true  = offline fallback: build the floor from seed/base.json with every rack visible.
  */
-export const USE_SEED = true;
+export const USE_SEED = false;
 const POLL_MS = 5000;
 
 const RANK: Record<Severity, number> = { low: 1, medium: 2, high: 3, critical: 4 };

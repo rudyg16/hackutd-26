@@ -1,8 +1,9 @@
 // OWNER: Person B. GET /api/floor -> FloorView. The server decides visibility; 3D does no access logic.
+// Technicians only see racks and problems assigned to them (subject-matter-expert rule); leads and admins see all.
 import { NextResponse, type NextRequest } from "next/server";
 import type { Device, FloorView, Highlight, Rack, Severity } from "@/shared/types";
 import { db } from "@/db/client";
-import { canSeeTenant, getCurrentUser } from "@/lib/access";
+import { canSeeProblem, canSeeTenant, getCurrentUser, seesOnlyAssignedRacks } from "@/lib/access";
 
 export const dynamic = "force-dynamic";
 
@@ -19,7 +20,10 @@ export async function GET(req: NextRequest) {
   const [racksRes, devicesRes, ticketsRes] = await Promise.all([
     db.from("racks").select("*").order("row").order("col"),
     db.from("devices").select("*"),
-    db.from("tickets").select("rack_id, device_id, position_id, severity").in("status", ["open", "in_progress"]),
+    db
+      .from("tickets")
+      .select("rack_id, device_id, position_id, severity, assignee_id")
+      .in("status", ["open", "in_progress"]),
   ]);
   const err = racksRes.error ?? devicesRes.error ?? ticketsRes.error;
   if (err) return NextResponse.json({ error: err.message }, { status: 500 });
@@ -32,7 +36,17 @@ export async function GET(req: NextRequest) {
     .is("cleared_at", null);
   const alerts = alertsRes.error ? [] : (alertsRes.data ?? []);
 
-  const problems = [...(ticketsRes.data ?? []), ...alerts];
+  // Only the problems this user may see: technicians get their own assigned tickets, leads and admins
+  // everything, tenant users their org's. Alerts have no assignee yet, so they go to leads and admins.
+  const tenantOf = new Map((racksRes.data ?? []).map((r) => [r.id as string, r.tenant_id as string]));
+  const problems = [
+    ...(ticketsRes.data ?? []),
+    ...alerts.map((a) => ({ ...a, assignee_id: null as string | null })),
+  ].filter((p) => {
+    const tenantId = tenantOf.get(p.rack_id);
+    return tenantId !== undefined && canSeeProblem(user, tenantId, p.assignee_id);
+  });
+  const racksWithProblems = new Set(problems.map((p) => p.rack_id as string));
 
   const visibleRackIds = new Set<string>();
   const worst = new Map<string, Severity>();
@@ -48,7 +62,9 @@ export async function GET(req: NextRequest) {
     const rack: Rack = {
       id: r.id, label: r.label, row: r.row, col: r.col, tenantId: r.tenant_id, heightU: r.height_u,
     };
-    const visible = canSeeTenant(user, rack.tenantId);
+    // Technicians see only racks holding work assigned to them; the rest render grey.
+    const visible =
+      canSeeTenant(user, rack.tenantId) && (!seesOnlyAssignedRacks(user) || racksWithProblems.has(rack.id));
     if (visible) visibleRackIds.add(rack.id);
     return { ...rack, visible, worstSeverity: visible ? (worst.get(rack.id) ?? null) : null };
   });

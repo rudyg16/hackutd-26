@@ -24,6 +24,20 @@ export function canSeeTenant(user: User, tenantId: string): boolean {
   return user.orgId === tenantId;
 }
 
+/**
+ * Can this user see an open problem (ticket or simulator alert) on the floor?
+ * Shift leads and admins see everything; technicians only problems assigned to them (unassigned work is
+ * the shift lead's to hand out); tenant users see their own org's.
+ */
+export function canSeeProblem(user: User, tenantId: string, assigneeId: string | null): boolean {
+  if (!canSeeTenant(user, tenantId)) return false;
+  if (user.role === "technician") return assigneeId === user.id;
+  return true;
+}
+
+/** Technicians only see the racks they have assigned work on; everyone else sees every rack in their scope. */
+export const seesOnlyAssignedRacks = (user: User) => user.role === "technician";
+
 /** Can this user change tickets for this tenant? */
 export function canWorkTenant(user: User, tenantId: string): boolean {
   if (user.role === "tenant_viewer") return false;
