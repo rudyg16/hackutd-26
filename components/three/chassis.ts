@@ -166,6 +166,8 @@ function outline(edges: THREE.EdgesGeometry, material: THREE.LineBasicMaterial) 
 export interface PositionMeshData {
   localId: string;
   kind: PositionKind;
+  /** Which side of the device it's on, so cameras know where to look from. */
+  face: FaceName;
   /** Part kinds that can sit in this position (cable, sfp...), for the guided repair later. */
   partKinds: PartKind[];
   /** The matching database row, or null if none was passed in. */
@@ -215,6 +217,7 @@ export function buildChassis(model: DeviceModel, positions: Position[]): THREE.G
     mesh.userData = {
       localId: slot.localId,
       kind: slot.group.kind,
+      face: slot.face,
       partKinds: slot.group.parts,
       position: byLocalId.get(slot.localId) ?? null,
       baseMaterial: material,

@@ -35,11 +35,11 @@ Work through these in order. Run `/implement a` to pick up the next unchecked it
   - Clicking a rack selects it; store `selectedDeviceId` in state.
   - The aside panel gets an `onTicketClick(deviceId)` callback (stubbed for now — B wires open tickets; C wires ItemDrawer).
 
-- [ ] **Camera fly-in** — `app/page.tsx` / `components/three/FloorScene.tsx`
+- [x] **Camera fly-in** — `app/page.tsx` / `components/three/FloorScene.tsx`
   - When `selectedDeviceId` changes, ease the camera to look at that device's rack position (tween position + lookAt over ~0.6 s using `useFrame`).
   - Clicking the canvas background (no rack hit) resets camera to the full floor overview.
 
-- [ ] **Guided repair animation** — `components/three/GuidedRepair.tsx` *(do this last)*
+- [x] **Guided repair animation** — `components/three/GuidedRepair.tsx` *(do this last)*
   ```ts
   interface Step { caption: string; highlightMesh: string; animateFn?: (t: number) => void; }
   interface Props { deviceId: string; steps: Step[]; onDone: () => void; }

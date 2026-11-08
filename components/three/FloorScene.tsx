@@ -7,10 +7,10 @@ import { Grid, Html, OrbitControls } from "@react-three/drei";
 import { Bloom, EffectComposer } from "@react-three/postprocessing";
 import * as THREE from "three";
 import {
-  buildChassis, getDeviceModel, MM, SEVERITY_COLOR, setHighlight, U,
+  buildChassis, getDeviceModel, getPositionMesh, MM, SEVERITY_COLOR, setHighlight, U, type PositionMeshData,
 } from "@/components/three/chassis";
-import { applyPose, fitPose, type Controls } from "@/components/three/camera";
-import type { Device, FloorView, Severity } from "@/shared/types";
+import { fitPose, useCameraGlide } from "@/components/three/camera";
+import type { Device, FloorView, Highlight, Severity } from "@/shared/types";
 
 type FloorRack = FloorView["racks"][number];
 
@@ -144,7 +144,7 @@ function RackBox({
           {sev && (
             <pointLight position={[0, h * 0.6, RACK_D / 2 + 0.6]} color={SEVERITY_COLOR[sev]} intensity={3} distance={3} />
           )}
-          <Html center position={[0, h + 0.18, 0]} className="pointer-events-none select-none">
+          <Html center position={[0, h + 0.18, 0]} zIndexRange={[10, 0]} className="pointer-events-none select-none">
             <span className={`border border-line bg-bg/70 px-1 ${selected ? "text-neon-cyan" : sev ? SEV_TEXT[sev] : "text-dim"}`}>
               {rack.label}
             </span>
@@ -182,16 +182,45 @@ export function floorSphere(racks: FloorRack[]) {
   return box.getBoundingSphere(new THREE.Sphere());
 }
 
-/** Frames the whole floor on load and whenever the canvas is resized. */
-function OverviewRig({ racks }: { racks: FloorRack[] }) {
+// ── Camera ──────────────────────────────────────────────────────────
+type Side = "front" | "back" | "top";
+/** What the camera is zoomed in on: a device, seen from the side its worst problem is on. */
+type Focus = { deviceId: string; side: Side; steep: boolean } | null;
+
+const LOW = Math.tan(THREE.MathUtils.degToRad(25)); // normal viewing angle above the device
+const HIGH = Math.tan(THREE.MathUtils.degToRad(60)); // steep enough to look over a 2 m rack in the way
+function focusDirection(side: Side, steep: boolean) {
+  if (side === "top") return new THREE.Vector3(0, HIGH, 1);
+  return new THREE.Vector3(0, steep ? HIGH : LOW, side === "back" ? -1 : 1);
+}
+
+/**
+ * Glides the camera (~0.6 s) to the focused device, or back to the whole-floor overview when nothing
+ * is selected. The first placement and nothing else is instant.
+ */
+function CameraRig({
+  racks, focus, deviceGroups,
+}: {
+  racks: FloorRack[];
+  focus: Focus;
+  deviceGroups: Map<string, THREE.Group>;
+}) {
   const camera = useThree((s) => s.camera) as THREE.PerspectiveCamera;
-  const controls = useThree((s) => s.controls) as Controls;
   const { width, height } = useThree((s) => s.size);
   const rackKey = racks.map((r) => `${r.id}:${r.row}:${r.col}`).join(",");
-  useEffect(() => {
-    applyPose(camera, controls, fitPose(camera, floorSphere(racks), OVERVIEW_DIRECTION, width / height, 1.0));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rackKey, width, height, camera, controls]);
+  const focusKey = focus ? `${focus.deviceId}|${focus.side}|${focus.steep}` : "overview";
+
+  // Re-fly only when the focus, canvas size or rack layout changes, not on every floor poll.
+  useCameraGlide(() => {
+    const group = focus && deviceGroups.get(focus.deviceId);
+    if (focus && group) {
+      group.updateWorldMatrix(true, true);
+      const sphere = new THREE.Box3().setFromObject(group).getBoundingSphere(new THREE.Sphere());
+      return fitPose(camera, sphere, focusDirection(focus.side, focus.steep), width / height, 1.25);
+    }
+    return fitPose(camera, floorSphere(racks), OVERVIEW_DIRECTION, width / height, 1.0);
+  }, `${focusKey}|${rackKey}|${width}x${height}`);
+
   return null;
 }
 
@@ -236,6 +265,25 @@ export default function FloorScene({ floor, selectedDeviceId, onSelectDevice }: 
 
   const selectedRackId = floor.devices.find((d) => d.id === selectedDeviceId)?.rackId ?? null;
 
+  // Where to fly: the selected device, from the side of its worst problem (front if none),
+  // steeply when another rack stands on that side and would block the view.
+  const focus = useMemo<Focus>(() => {
+    const device = floor.devices.find((d) => d.id === selectedDeviceId);
+    const rack = floor.racks.find((r) => r.id === device?.rackId);
+    const group = device && deviceGroups.get(device.id);
+    if (!device || !rack || !group) return null;
+    let worst: Highlight | null = null;
+    for (const h of floor.highlights) {
+      if (h.deviceId === device.id && (!worst || RANK[h.severity] > RANK[worst.severity])) worst = h;
+    }
+    const face = worst ? (getPositionMesh(group, worst.localId)?.userData as PositionMeshData | undefined)?.face : undefined;
+    const side: Side = face ?? "front";
+    // Row 0 is at the front, so the rack in front of this one is row - 1 and the one behind is row + 1.
+    const neighbourRow = side === "back" ? rack.row + 1 : rack.row - 1;
+    const steep = side !== "top" && floor.racks.some((r) => r.col === rack.col && r.row === neighbourRow);
+    return { deviceId: device.id, side, steep };
+  }, [floor.devices, floor.racks, floor.highlights, selectedDeviceId, deviceGroups]);
+
   const [hoveredRackId, setHoveredRackId] = useState<string | null>(null);
   useEffect(() => {
     document.body.style.cursor = hoveredRackId ? "pointer" : "";
@@ -277,7 +325,7 @@ export default function FloorScene({ floor, selectedDeviceId, onSelectDevice }: 
       ))}
 
       <OrbitControls makeDefault maxPolarAngle={Math.PI / 2.1} />
-      <OverviewRig racks={floor.racks} />
+      <CameraRig racks={floor.racks} focus={focus} deviceGroups={deviceGroups} />
       <EffectComposer>
         <Bloom mipmapBlur luminanceThreshold={1} intensity={1.2} />
       </EffectComposer>
