@@ -15,7 +15,7 @@ Work through these in order. Run `/implement c` to pick up the next unchecked it
   - **tickets**: at least 6 resolved `link_flap` tickets on `SW-C4-01/port-13` within last 30 days (to trigger `replace_suggested`), plus a few open tickets on other positions across both tenants.
   - **work_log**: plausible entries for the scripted demo tickets.
 
-- [ ] **`/api/ai/draft-ticket`** — `app/api/ai/draft-ticket/route.ts`
+- [x] **`/api/ai/draft-ticket`** — `app/api/ai/draft-ticket/route.ts`
   POST `{reportText}` → `TicketDraft`.
   - System prompt: given the floor layout (racks, devices, positions), parse the report and return JSON with all `TicketDraft` fields. Zod schema matches `shared/types.ts#TicketDraft`.
   - Fallback key for `seed/demo.json`: `"draft-ticket:${reportText.trim().toLowerCase().slice(0,80)}"`.
