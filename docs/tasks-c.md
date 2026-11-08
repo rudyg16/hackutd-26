@@ -26,7 +26,7 @@ Work through these in order. Run `/implement c` to pick up the next unchecked it
   - Prompt: summarise the history of resolved tickets + part replacements; output `{positionId, summary, recommendation}`.
   - Fallback key: `"known-issue:${positionId}"`.
 
-- [ ] **`/api/ai/draft-handoff`** — `app/api/ai/draft-handoff/route.ts`
+- [x] **`/api/ai/draft-handoff`** — `app/api/ai/draft-handoff/route.ts`
   POST `{ticketId}` → `{note: string}`.
   - Fetch ticket + work-log entries + position history.
   - Prompt: write a concise shift handoff note covering what's been done, current state, and what to watch.
