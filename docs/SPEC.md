@@ -66,7 +66,7 @@
 3. Alex logs "replacement cable requested" and clicks **End shift**. The AI drafts the handoff note, and Alex sends it to Sam.
 4. **Sam (morning technician)**: a live notice appears. Sam opens the shift brief, acknowledges the ticket (now assigned to Sam), and walks through the **guided cable swap** in 3D. Sam then replaces the part with a new serial and resolves the ticket. The repeat count starts over.
 5. **Kim (Acme tenant viewer)**: sees only Acme's racks, and sees "Resolved — cable replaced" with no internal notes.
-6. *(Optional)* **Morgan (admin)** revokes Sam's Acme approval, and Sam disappears from the handoff picker.
+6. *(Optional)* **Dana (admin)** revokes Sam's Acme approval, and Sam disappears from the handoff picker.
 
 ## Out of scope
 Real authentication, the live alert simulator (seeded alerts only if the team is ahead at hour 8), serial-number tracking across hosts, voice input, mobile layout, deployment.
