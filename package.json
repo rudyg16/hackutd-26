@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "seed": "tsx scripts/seed.ts",
+    "sim": "tsx scripts/sim.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
