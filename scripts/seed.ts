@@ -1,13 +1,12 @@
 /**
- * Idempotent seed: upserts seed/base.json + seed/demo.json into Supabase.
+ * Idempotent seed: upserts seed/base.json into Supabase (seed/demo.json is only cached AI answers).
  * Positions are generated from seed/device-models.json. OWNER: Person B (runner), Person C (data).
  *   npm run seed           -> upsert (safe to run any time)
- *   npm run seed -- --wipe -> delete demo tickets/handoffs/logs first (announce before doing this!)
+ *   npm run seed -- --wipe -> delete tickets/handoffs/logs and simulator run data first (announce before doing this!)
  */
 import { config } from "dotenv";
 import { createClient } from "@supabase/supabase-js";
 import base from "../seed/base.json";
-import demo from "../seed/demo.json";
 import models from "../seed/device-models.json";
 
 config({ path: ".env.local" });
@@ -48,11 +47,16 @@ async function upsert(table: string, rows: object[]) {
 
 async function main() {
   if (process.argv.includes("--wipe")) {
-    for (const t of ["handoffs", "work_log", "tickets"]) {
-      const { error } = await db.from(t).delete().neq("id", "");
-      if (error) throw new Error(`wipe ${t}: ${error.message}`);
+    // alerts / position_metrics / sim_* are cleared too, or stale alerts keep racks glowing.
+    const wipeKey: Record<string, string> = {
+      handoffs: "id", work_log: "id", alerts: "id", sim_commands: "id", sim_part_state: "id",
+      position_metrics: "position_id", tickets: "id",
+    };
+    for (const [t, key] of Object.entries(wipeKey)) {
+      const { error } = await db.from(t).delete().neq(key, "");
+      if (error && !/does not exist|schema cache/.test(error.message)) throw new Error(`wipe ${t}: ${error.message}`);
     }
-    console.log("wiped tickets, work_log, handoffs");
+    console.log("wiped tickets, work_log, handoffs, simulator run data");
   }
 
   await upsert("orgs", base.orgs);
@@ -67,16 +71,20 @@ async function main() {
     id: d.id, rack_id: d.rackId, kind: d.kind, model_id: d.modelId, u_position: d.uPosition, name: d.name,
   })));
   await upsert("positions", base.devices.flatMap((d) => positionsFor(d.id, d.modelId)));
-  await upsert("installed_parts", demo.parts.map((p) => ({
+  await upsert("installed_parts", base.installed_parts.map((p) => ({
     id: p.id, position_id: p.positionId, kind: p.kind, serial: p.serial,
     installed_at: daysAgo(p.installedDaysAgo), removed_at: daysAgo(p.removedDaysAgo),
   })));
-  await upsert("tickets", demo.tickets.map((t) => ({
+  await upsert("tickets", base.tickets.map((t) => ({
     id: t.id, title: t.title, description: t.description, status: t.status, severity: t.severity,
     category: t.category, tenant_id: t.tenantId, rack_id: t.rackId, device_id: t.deviceId,
     position_id: t.positionId, part_id: t.partId, reporter_id: t.reporterId, assignee_id: t.assigneeId,
     created_at: daysAgo(t.createdDaysAgo), resolved_at: daysAgo(t.resolvedDaysAgo),
     resolution_action: t.resolutionAction, resolution_note: t.resolutionNote,
+  })));
+  await upsert("work_log", base.work_log.map((w) => ({
+    id: w.id, ticket_id: w.ticketId, author_id: w.authorId, kind: w.kind, body: w.body,
+    internal: w.internal, created_at: daysAgo(w.createdDaysAgo),
   })));
   console.log("seed done");
 }
