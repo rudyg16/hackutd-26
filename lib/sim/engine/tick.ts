@@ -3,7 +3,7 @@
  * Pure: no I/O, no Math.random, no clock. Same seed + config + commands ⇒ same output.
  */
 import { mergeConfig, type DeepPartial, type SimConfig } from "../config";
-import { applyBreak, developsDefect, drawInitialConditions, drawMode, drawOnset, wearFor, withDefect } from "./defects";
+import { applyBreak, developsDefect, drawInitialConditions, drawMode, drawOnset, drawPartCondition, wearFor, withDefect } from "./defects";
 import { detect } from "./detect";
 import { baselineMetrics, initialThermal, stepThermal } from "./metrics";
 import { applyModes } from "./modes";
@@ -39,6 +39,34 @@ export function createState(inventory: SimInventory, opts: CreateStateOptions): 
   const metrics = baselineMetrics(inventory, thermal, 0, rng, config);
 
   return { seed: opts.seed, simTimeS, rngState: rng.state, config, inventory, conditions, thermal, metrics, signals: {} };
+}
+
+export interface RestoreStateOptions {
+  seed: number;
+  simTimeS: number;
+  config?: DeepPartial<SimConfig>;
+  /** Hidden conditions saved by a previous process (keyed like `SimState.conditions`). */
+  conditions: Record<string, PartCondition>;
+}
+
+/**
+ * Rebuilds state from persisted conditions (live resume). Parts with no saved row get a fresh
+ * draw. The RNG restarts from the seed mixed with the sim clock; resumed runs aren't replayable.
+ */
+export function restoreState(inventory: SimInventory, opts: RestoreStateOptions): SimState {
+  const config = mergeConfig(opts.config);
+  const rng = new Rng((opts.seed ^ Math.floor(opts.simTimeS)) >>> 0);
+  const conditions: Record<string, PartCondition> = {};
+  for (const part of Object.values(inventory.parts)) {
+    const saved = opts.conditions[part.id];
+    conditions[part.id] = saved ?? drawPartCondition(part, opts.simTimeS, rng, config);
+  }
+  for (const [key, cond] of Object.entries(opts.conditions)) {
+    if (cond.partId === null && inventory.positions[cond.positionId]) conditions[key] = cond;
+  }
+  const thermal = initialThermal(inventory, rng, config);
+  const metrics = baselineMetrics(inventory, thermal, 0, rng, config);
+  return { seed: opts.seed, simTimeS: opts.simTimeS, rngState: rng.state, config, inventory, conditions, thermal, metrics, signals: {} };
 }
 
 const sameMetrics = (a: PositionMetrics | undefined, b: PositionMetrics) => JSON.stringify(a) === JSON.stringify(b);

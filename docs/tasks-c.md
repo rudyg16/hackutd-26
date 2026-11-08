@@ -95,10 +95,10 @@ Work through these in order. Run `/implement c` to pick up the next unchecked it
 - [x] **`user-monitor` seed user** — `seed/base.json`
   "NorthMark Monitoring", `org-northmark`, technician, approved acme + globex.
 
-- [ ] **Supabase adapter** — `lib/sim/adapter.ts` *(needs B's sim migration)*
+- [x] **Supabase adapter** — `lib/sim/adapter.ts` *(needs B's sim migration — written to SIM-SPEC §9, run loop tested with an in-memory store, **not yet run against a real DB**)*
   Load parts/positions, persist `sim_part_state`, batched `position_metrics` flush every `flushMs`, insert alerts immediately, heartbeat + sim time to `sim_control`, consume `sim_commands`, read resolved tickets / part changes as repair events.
 
-- [ ] **Alert → ticket pipeline** — in adapter *(needs B's `POST /api/tickets`)*
+- [x] **Alert → ticket pipeline** — `lib/sim/pipeline.ts`, wired in `lib/sim/runner.ts` *(tested with fakes; the real draft-ticket → POST /api/tickets path is untested)*
   Dedupe (work-log onto existing open ticket), throttle (`minTicketGapSec`, `maxOpenSimTickets`), `draft-ticket` as `user-monitor`, create as `ai_draft`. On failure: log, keep alert with `ticket_id null`, retry on next alert (§8).
 
 - [ ] **`--reset`** — `scripts/sim.ts`

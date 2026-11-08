@@ -1,4 +1,4 @@
-export { createState, tick, type CreateStateOptions } from "./tick";
+export { createState, restoreState, tick, type CreateStateOptions, type RestoreStateOptions } from "./tick";
 export { inventoryFromSeed, type SeedLike } from "./inventory";
 export { Rng } from "./rng";
 export { applyRepairEvents, type RepairResult } from "./repair";
