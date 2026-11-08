@@ -101,7 +101,7 @@ Work through these in order. Run `/implement c` to pick up the next unchecked it
 - [x] **Alert → ticket pipeline** — `lib/sim/pipeline.ts`, wired in `lib/sim/runner.ts` *(tested with fakes; the real draft-ticket → POST /api/tickets path is untested)*
   Dedupe (work-log onto existing open ticket), throttle (`minTicketGapSec`, `maxOpenSimTickets`), `draft-ticket` as `user-monitor`, create as `ai_draft`. On failure: log, keep alert with `ticket_id null`, retry on next alert (§8).
 
-- [ ] **`--reset`** — `scripts/sim.ts`
+- [x] **`--reset`** — `scripts/sim.ts`, `lib/sim/reset.ts` *(not run against a real DB yet)*
   Delete tickets/parts not in `base.json`, re-upsert seeded parts/tickets/work_log, truncate sim tables, redraw (§14).
 
 - [ ] **Sim API routes** — `app/api/sim/**`

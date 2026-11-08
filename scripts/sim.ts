@@ -5,6 +5,7 @@
  *   tsx scripts/sim.ts --scenario demo-port13       pin scenario conditions (recording)
  *   tsx scripts/sim.ts --speed 120                  sim-seconds per real second (default 60)
  *   tsx scripts/sim.ts --dry-run --minutes 10       print events, no DB writes, as fast as possible
+ *   tsx scripts/sim.ts --reset [--seed N]           wipe run data, redraw defects, exit
  *   tsx scripts/sim.ts --dry-run --xray             also print the hidden defect draw
  */
 import { config as loadEnv } from "dotenv";
@@ -15,6 +16,7 @@ import type { SeedLike } from "../lib/sim/engine";
 import { loadScenario } from "../lib/sim/scenarios";
 import { HttpTicketApi, SupabaseStore, createSimDb } from "../lib/sim/adapter";
 import { runSim } from "../lib/sim/runner";
+import { resetRun } from "../lib/sim/reset";
 
 export interface CliArgs {
   seed: number | null;
@@ -65,7 +67,20 @@ async function main() {
 
   loadEnv({ path: ".env.local" });
   loadEnv(); // falls back to .env
-  const store = new SupabaseStore(createSimDb());
+  const db = createSimDb();
+  const store = new SupabaseStore(db);
+
+  if (args.reset) {
+    const seedUsed = await resetRun(db, store, {
+      seed: args.seed ?? undefined,
+      scenario,
+      speed: args.speed ?? undefined,
+      log: (m) => console.log(m),
+    });
+    console.log(`[sim] reset done (seed ${seedUsed}); run \`tsx scripts/sim.ts\` to resume`);
+    return;
+  }
+
   const api = new HttpTicketApi();
   const abort = new AbortController();
   process.on("SIGINT", () => abort.abort());
